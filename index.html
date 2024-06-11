@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário de Solicitação de Derso - 1º BPM</title>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@chenfengyuan/datepicker/dist/datepicker.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Formulário de Solicitação de Derso - 1º BPM</h2>
+    <form id="formulario">
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="nome_guerra">Nome de Guerra:</label>
+            <input type="text" class="form-control" id="nome_guerra" name="nome_guerra" required>
+        </div>
+        <div class="form-group">
+            <label for="re">RE (Registro Estatístico):</label>
+            <input type="text" class="form-control" id="re" name="re" required>
+            <small id="reHelp" class="form-text text-muted">O formato deve ser '1000******', com exatamente 10 dígitos.</small>
+        </div>
+        <div class="form-group">
+            <label for="folga">Folga:</label>
+            <select class="form-control" id="folga" name="folga" required>
+                <option value="">Selecione</option>
+                <option value="24H">24H</option>
+                <option value="48H">48H</option>
+                <option value="72H">72H</option>
+                <option value="1ª FOLGA">1ª FOLGA</option>
+                <option value="2ª FOLGA">2ª FOLGA</option>
+                <option value="Expediente">EXPEDIENTE</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="data_requerida">Data Requerida:</label>
+            <input type="text" class="form-control" id="data_requerida" name="data_requerida" required>
+        </div>
+        <div class="form-group">
+            <label>Policiamento:</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="reforco" name="policiamento" value="reforco">
+                <label class="form-check-label" for="reforco">Reforço</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="rural" name="policiamento" value="rural">
+                <label class="form-check-label" for="rural">Rural</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="tj_cal" name="policiamento" value="tj_cal">
+                <label class="form-check-label" for="tj_cal">TJ CAL</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="emeron_8h" name="policiamento" value="emeron_8h">
+                <label class="form-check-label" for="emeron_8h">Emeron</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="comercio_seguro" name="policiamento" value="comercio_seguro">
+                <label class="form-check-label" for="comercio_seguro">Comércio Seguro</label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </form>
+</div>
+
+<!-- Adicionando o script do jQuery e do plugin de calendário -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@chenfengyuan/datepicker"></script>
+<script>
+    // Inicializando o plugin de calendário
+    $('#data_requerida').datepicker({
+        format: 'dd/mm/yyyy',
+        autoHide: true
+    });
+
+    // Validando o campo RE
+    document.getElementById('formulario').addEventListener('submit', function(event) {
+        event.preventDefault(); // Impede o envio padrão do formulário
+        const reInput = document.getElementById('re');
+        const reValue = reInput.value.trim();
+        const reRegex = /^1000\d{5}$/; // Expressão regular para o formato '1000*****'
+
+        if (!reRegex.test(reValue)) {
+            // Se o valor não corresponder ao formato especificado
+            alert('O campo RE deve estar no formato 1000*****, com exatamente 10 dígitos.');
+            return;
+        }
+
+        const formData = new FormData(event.target);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (key === 'policiamento') {
+                if (!data[key]) {
+                    data[key] = [];
+                }
+                data[key].push(value);
+            } else {
+                data[key] = value;
+            }
+        });
+
+        fetch('http://localhost:3000/enviar', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message || 'Dados salvos com sucesso!');
+            event.target.reset();
+        })
+        .catch(error => {
+            alert('Erro ao enviar o formulário: ' + error.message);
+        });
+    });
+</script>
+</body>
+</html>

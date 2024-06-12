@@ -1,0 +1,12 @@
+{
+  "name": "meu-projeto-html",
+  "version": "1.0.0",
+  "description": "Formulário HTML para solicitação de Derso - 1º BPM",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server"
+  },
+  "devDependencies": {
+    "live-server": "^0.11.1"
+  }
+}

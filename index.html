@@ -40,6 +40,7 @@
         }
         input[type="email"],
         input[type="text"],
+        input[type="tel"], /* Novo campo de telefone */
         select {
             width: 100%;
             padding: 12px;
@@ -53,6 +54,7 @@
         }
         input[type="email"]:focus,
         input[type="text"]:focus,
+        input[type="tel"]:focus,
         select:focus {
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
@@ -113,6 +115,9 @@
         
         <label for="re">RE (Registro Estatístico):</label>
         <input type="text" id="re" name="re" required pattern="1000\d{6}" title="Insira seu RE, iniciando com 1000, sem pontos ou traços"><br>
+        
+        <label for="telefone">Telefone Celular:</label>
+        <input type="tel" id="telefone" name="telefone" required pattern="[0-9]{10,11}" title="Insira um número de telefone válido (somente números, 10 ou 11 dígitos)"><br>
         
         <label for="folga">Folga:</label>
         <select id="folga" name="folga" required>
@@ -176,6 +181,15 @@
 
             if (!rePattern.test(reValue)) {
                 alert("RE inválido. Certifique-se de que começa com 1000 e possui 10 dígitos.");
+                return false;
+            }
+
+            var telefoneInput = document.getElementById("telefone");
+            var telefoneValue = telefoneInput.value.trim();
+            var telefonePattern = /^[0-9]{10,11}$/;
+
+            if (!telefonePattern.test(telefoneValue)) {
+                alert("Telefone inválido. Insira um número de telefone válido (somente números, 10 ou 11 dígitos).");
                 return false;
             }
 

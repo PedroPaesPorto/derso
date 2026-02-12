@@ -1,24 +1,18 @@
-import { DOM } from "./dom.js";
-import { CONFIG } from "./config.js";
-import { registrarLog } from "./logger.js";
-import { showModal } from "./modal.js";
-import { updateProgress } from "./progress.js";
-import { STATE } from "./state.js";
-import {
-    setButtonLoading,
-    restoreButton,
-    lockForm,
-    unlockForm,
-    flashElement,
-    shakeElement,
-    scrollToTop
-} from "./ui.js";
-import { salvarRascunho } from "./storage.js";
+// handlers/submit.js
+
+// ✅ Importações corrigidas: saindo de handlers (../) para buscar nas pastas certas
+import { DOM } from "../core/dom.js";
+import { CONFIG } from "../core/config.js";
+import { STATE } from "../core/state.js";
+import { registrarLog } from "../services/logger.js";
+import { updateProgress } from "../services/progress.js";
+import { salvarRascunho } from "../services/storage.js";
+import { UI } from "../ui/manager.js"; // Centralizamos modal, loading e efeitos aqui
 
 export async function handleSubmit(e) {
     e.preventDefault();
 
-    // 🔒 Anti spam
+    // 🔒 Anti spam (3 segundos)
     if (Date.now() - STATE.ultimoEnvio < 3000) {
         registrarLog("BLOQUEIO", "Tentativa de envio muito rápida", "AVISO");
         return;
@@ -29,8 +23,9 @@ export async function handleSubmit(e) {
     registrarLog("ENVIO", `Iniciando tentativa para matrícula: ${mLog}`);
 
     try {
-        lockForm();
-        setButtonLoading(DOM.btnEnviar, "ENVIANDO...");
+        // Usando o objeto UI centralizado
+        UI.form.lock(); 
+        UI.loading.show("ENVIANDO...");
 
         const formData = new URLSearchParams(new FormData(DOM.form));
 
@@ -46,9 +41,7 @@ export async function handleSubmit(e) {
 
         clearTimeout(timeout);
 
-        if (!res.ok) {
-            throw new Error(`Erro HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
 
         let response;
         try {
@@ -57,10 +50,10 @@ export async function handleSubmit(e) {
             throw new Error("Resposta inválida do servidor");
         }
 
-        if (response.success) {
-            registrarLog("SUCESSO", `Solicitação de ${mLog} registrada com sucesso`, "SUCESSO");
+        if (response.success || response.result === "success") {
+            registrarLog("SUCESSO", `Solicitação de ${mLog} registrada`, "SUCESSO");
 
-            showModal(
+            UI.modal.show(
                 "SUCESSO!",
                 "Sua solicitação foi registrada no banco de dados.",
                 "✔",
@@ -68,8 +61,8 @@ export async function handleSubmit(e) {
             );
 
             limparFormulario();
-            flashElement(DOM.form);
-            scrollToTop();
+            UI.effects.flash(DOM.form);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
         } else {
             tratarErroServidor(response);
@@ -77,10 +70,9 @@ export async function handleSubmit(e) {
 
     } catch (err) {
         registrarLog("ERRO_CRITICO", err.message, "ERRO");
+        UI.effects.shake(DOM.form);
 
-        shakeElement(DOM.form);
-
-        showModal(
+        UI.modal.show(
             "ERRO DE CONEXÃO",
             err.name === "AbortError"
                 ? "O servidor demorou para responder. Tente novamente."
@@ -89,11 +81,10 @@ export async function handleSubmit(e) {
             "red"
         );
     } finally {
-        unlockForm();
-        restoreButton(DOM.btnEnviar);
+        UI.form.unlock();
+        UI.loading.hide();
     }
 }
-
 
 /* ======================================
    FUNÇÕES AUXILIARES
@@ -101,10 +92,8 @@ export async function handleSubmit(e) {
 
 function limparFormulario() {
     DOM.form.reset();
-
     updateProgress();
-    salvarRascunho({}); // limpa rascunho salvo
-
+    salvarRascunho({}); // Limpa rascunho salvo
     registrarLog("FORM_RESET", "Formulário limpo após envio");
 }
 
@@ -112,23 +101,21 @@ function tratarErroServidor(response) {
     registrarLog("ENVIO_NEGADO", `Servidor recusou: ${response.message}`, "AVISO");
 
     if (response.message?.toLowerCase().includes("duplicada")) {
-        showModal(
+        UI.modal.show(
             "SOLICITAÇÃO DUPLICADA",
             "Você já solicitou folga para esta data.",
             "🚫",
             "orange"
         );
-
         limparFormulario();
         return;
     }
 
-    showModal(
+    UI.modal.show(
         "AVISO",
         response.message || "Falha desconhecida.",
         "⚠️",
         "orange"
     );
-
-    shakeElement(DOM.form);
+    UI.effects.shake(DOM.form);
 }

@@ -1,5 +1,8 @@
-import { DOM } from "./dom.js";
-import { CONFIG } from "./config.js";
+// services/footer.js
+
+// ✅ Corrigido: Saindo da pasta 'services' e entrando na 'core'
+import { DOM } from "../core/dom.js";
+import { CONFIG } from "../core/config.js";
 
 export function updateFooter() {
 

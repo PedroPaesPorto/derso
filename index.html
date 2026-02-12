@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DERSO 1º BPM - Solicitação</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,21 +13,23 @@
     <div class="container">
         <div id="barraProgresso"></div>
         
+        <header class="header">
+            <div class="logos">
+                <img src="https://rondonia.ro.gov.br/wp-content/uploads/2024/09/Brasao-PMRO-370x523.png" alt="Brasão PMRO">
+                <img src="https://museu.pm.ro.gov.br/wp-content/uploads/2024/05/1-bpm-3.png" alt="Logotipo 1º BPM">
+            </div>
+            <h2>DERSO 1º BPM</h2>
+            <div class="divisor"></div>
+            <p class="subtitle">Formulário de Solicitação de Diária Especial de Reforço do Serviço Operacional</p>
+        </header>
+
         <div id="loadingScreen" class="loading-container">
+            <div class="spinner"></div>
             <p id="loadingText">Sincronizando dados com o sistema...</p>
         </div>
 
         <div id="formContent" class="is-hidden">
-            <header class="header">
-                <div class="logos">
-                    <img src="https://rondonia.ro.gov.br/wp-content/uploads/2024/09/Brasao-PMRO-370x523.png" alt="Brasão PMRO">
-                    <img src="https://museu.pm.ro.gov.br/wp-content/uploads/2024/05/1-bpm-3.png" alt="Logotipo 1º BPM">
-                </div>
-                <h2>DERSO 1º BPM</h2>
-                <div class="divisor"></div>
-                <p class="subtitle">Formulário de Solicitação de Diária Especial de Reforço do Serviço Operacional</p>
-            </header>
-
+            
             <section id="prazoBox">
                 <strong class="prazoTitulo">STATUS DO SISTEMA</strong>
                 <div id="timerDisplay">⌛ CALCULANDO PRAZO...</div>
@@ -69,9 +72,9 @@
                         <input type="radio" id="f72" name="folga" value="72H"><label for="f72">72H</label>
                         <input type="radio" id="f96" name="folga" value="96H"><label for="f96">96H</label>
                         <input type="radio" id="fLE" name="folga" value="FOLGA LE"><label for="fLE">LE</label>
-                        <input type="radio" id="f1" name="folga" value="1ª Folga"><label for="f1">1ª FOLGA</label>
-                        <input type="radio" id="f2" name="folga" value="2ª Folga"><label for="f2">2ª FOLGA</label>
-                        <input type="radio" id="fExp" name="folga" value="Expediente"><label for="fExp">EXPEDIENTE</label>
+                        <input type="radio" id="f1" name="folga" value="1ª Folga"><label for="f1">1ª F</label>
+                        <input type="radio" id="f2" name="folga" value="2ª Folga"><label for="f2">2ª F</label>
+                        <input type="radio" id="fExp" name="folga" value="Expediente"><label for="fExp">EXP</label>
                     </div>
                 </div>
 

@@ -15,9 +15,13 @@
     --borda-padrao: #e1e4e8;
     --raio-padrao: 12px;
     --sombra-suave: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --transicao: all 0.3s ease;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
 body {
     background-color: var(--cinza-fundo);
@@ -27,10 +31,11 @@ body {
     display: flex;
     justify-content: center;
     color: var(--texto-principal);
+    line-height: 1.6;
 }
 
 /* ==========================================================================
-   CONTAINER E ESTRUTURA
+   CONTAINER PRINCIPAL
    ========================================================================== */
 .container {
     width: 100%;
@@ -41,180 +46,123 @@ body {
     box-shadow: var(--sombra-suave);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-#barraProgresso {
-    position: absolute;
-    top: 0; 
-    left: 0;
-    width: 0%; 
-    height: 6px;
-    background: var(--ouro-brilhante);
-    transition: width 0.5s ease;
-    z-index: 10;
+/* --- CENTRALIZAÇÃO DO LOADING --- */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px; /* Garante que o texto fique no meio do card */
+    width: 100%;
+    text-align: center;
 }
 
-.barra-completa {
-    box-shadow: 0 0 15px var(--sucesso-verde);
-    background: var(--sucesso-verde) !important;
+#loadingText {
+    font-weight: 700;
+    color: var(--azul-marinho);
+    font-size: 16px;
+    animation: pulse 1.5s infinite ease-in-out;
 }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
 /* ==========================================================================
-   CABEÇALHO
+   CABEÇALHO (EFEITO DE CARD SUPERIOR)
    ========================================================================== */
 .header {
     text-align: center;
-    margin-bottom: 25px;
+    /* Faz o fundo "vazar" para as bordas do container */
+    margin: -35px -25px 25px -25px; 
+    padding: 35px 20px;
+    background: #f8fafc; /* Cor de fundo leve para o topo */
+    border-bottom: 1px solid var(--borda-padrao);
+    border-radius: var(--raio-padrao) var(--raio-padrao) 0 0;
 }
 
 .logos {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
 .logos img {
-    height: 75px;
+    height: 65px;
     width: auto;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-    transition: var(--transicao);
-}
-
-.logos img:hover {
-    transform: scale(1.05);
 }
 
 h2 {
     color: var(--azul-marinho);
-    font-size: 22px;
-    margin: 10px 0 0 0;
+    font-size: 20px;
+    margin: 0;
     font-weight: 900;
-    letter-spacing: 1px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .divisor {
-    width: 70%;
+    width: 60%;
     height: 3px;
     background: linear-gradient(90deg, transparent, var(--ouro-brilhante), transparent);
-    margin: 12px auto;
+    margin: 10px auto;
 }
 
 .subtitle {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--texto-secundario);
     font-weight: 500;
     margin: 0;
+    max-width: 80%;
+    margin: 0 auto;
 }
 
 /* ==========================================================================
-   STATUS E MENSAGENS (PRAZOBOX)
+   COMPONENTES (PRAZO, PROGRESSO, RADIOS)
    ========================================================================== */
+#barraProgresso {
+    position: absolute;
+    top: 0; left: 0; width: 0%; height: 6px;
+    background: var(--ouro-brilhante);
+    transition: width 0.5s ease;
+    z-index: 100;
+}
+
+.barra-completa { background: var(--sucesso-verde) !important; }
+
 #prazoBox {
     padding: 20px;
     text-align: center;
-    border-radius: var(--raio-padrao);
+    border-radius: 10px;
     margin-bottom: 25px;
     border: 2px solid var(--borda-padrao);
     background: #fafafa;
-    transition: var(--transicao);
 }
 
-#timerDisplay {
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: -0.2px;
-}
-
-/* Variantes do PrazoBox */
-.estado-verde { border-color: var(--sucesso-verde) !important; background: #f1f8f4 !important; color: var(--sucesso-verde); }
-.estado-alerta { border-color: var(--alerta-laranja) !important; background: #fff7ed !important; color: var(--alerta-laranja); }
-.estado-urgente { border-color: #e67e22 !important; background: #fff3e0 !important; color: #d35400; }
-.estado-critico { border-color: var(--critico-vermelho) !important; background: #fdecea !important; color: var(--critico-vermelho); }
-.estado-inspecao { border-color: var(--azul-marinho) !important; background: #eef2f7 !important; color: var(--azul-marinho); }
-
-#instMessage {
-    font-size: 14px;
-    font-style: italic;
-    color: var(--azul-marinho);
-    background: rgba(26, 60, 110, 0.05);
-    padding: 15px;
-    border-left: 5px solid var(--ouro-brilhante);
-    margin-bottom: 25px;
-    border-radius: 6px;
-    text-align: center;
-}
-
-/* ==========================================================================
-   FORMULÁRIO E INPUTS
-   ========================================================================== */
-.form-group {
-    margin-bottom: 22px;
-}
-
-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    color: #444;
-}
-
-.required::after {
-    content: " *";
-    color: var(--critico-vermelho);
-}
-
-input:not([type="radio"]) {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid var(--borda-padrao);
-    border-radius: 10px;
-    font-size: 16px;
-    transition: var(--transicao);
-    outline: none;
-}
-
-input:focus {
-    border-color: var(--azul-marinho);
-    box-shadow: 0 0 0 4px rgba(26, 60, 110, 0.1);
-}
-
-input.valido {
-    border-color: var(--sucesso-verde);
-    background: #f1f8f4;
-}
-
-/* Grid de Radios (Botões de folga) */
+/* Grid de Radios Otimizado */
 .radio-group {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
 }
 
-.radio-group input {
-    display: none;
-}
+.radio-group input { display: none; }
 
 .radio-group label {
     border: 2px solid var(--borda-padrao);
-    padding: 12px 5px;
-    border-radius: 10px;
-    font-size: 13px;
+    padding: 10px 2px;
+    border-radius: 8px;
+    font-size: 11px;
     font-weight: 800;
     cursor: pointer;
     text-align: center;
-    margin-bottom: 0;
     background: white;
     transition: var(--transicao);
-}
-
-.radio-group label:hover {
-    background: #f8fafc;
-    border-color: var(--azul-marinho);
 }
 
 .radio-group input:checked + label {
@@ -222,12 +170,36 @@ input.valido {
     color: var(--ouro-brilhante);
     border-color: var(--azul-marinho);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(26, 60, 110, 0.2);
 }
 
 /* ==========================================================================
-   BOTÕES E FOOTER
+   INPUTS E BOTÕES
    ========================================================================== */
+.form-group { margin-bottom: 20px; }
+
+label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+.required::after { content: " *"; color: var(--critico-vermelho); }
+
+input:not([type="radio"]) {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--borda-padrao);
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    transition: var(--transicao);
+}
+
+input:focus { border-color: var(--azul-marinho); background: #fff; }
+
 .btn {
     width: 100%;
     padding: 16px;
@@ -241,40 +213,16 @@ input.valido {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    letter-spacing: 0.5px;
 }
 
-.btn-primary {
-    background: var(--azul-marinho);
-    color: #fff;
-    box-shadow: 0 5px 15px rgba(26, 60, 110, 0.2);
-}
-
-.btn-primary:hover {
-    background: var(--azul-hover);
-    transform: translateY(-2px);
-}
+.btn-primary { background: var(--azul-marinho); color: #fff; }
+.btn-primary:hover { background: var(--azul-hover); transform: translateY(-2px); }
 
 .btn-outline {
     background: transparent;
     border: 2px solid #d1d5db;
     color: var(--texto-secundario);
-    font-size: 12px;
-}
-
-.btn:disabled {
-    background: #cbd5e0 !important;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.footer {
-    text-align: center;
     font-size: 11px;
-    color: #888;
-    margin-top: 30px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 /* ==========================================================================
@@ -296,18 +244,22 @@ input.valido {
     padding: 30px;
     border-radius: 20px;
     width: 90%;
-    max-width: 420px;
+    max-width: 400px;
     text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-.is-hidden {
-    display: none !important;
+.is-hidden { display: none !important; }
+
+.footer {
+    text-align: center;
+    font-size: 10px;
+    color: #999;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-/* ==========================================================================
-   ADAPTAÇÃO PARA MODO NOTURNO
-   ========================================================================== */
+/* MODO NOTURNO ADAPTADO AO NOVO HEADER */
 @media (prefers-color-scheme: dark) {
     :root {
         --cinza-fundo: #0f172a;
@@ -316,31 +268,9 @@ input.valido {
         --texto-secundario: #94a3b8;
         --borda-padrao: #334155;
     }
-
-    body {
-        background-color: var(--cinza-fundo);
-    }
-
-    .container {
-        border: 1px solid #334155;
-    }
-
-    input:not([type="radio"]) {
-        background: #0f172a;
-        color: white;
-    }
-
-    .radio-group label {
-        background: #1e293b;
-        color: #cbd5e1;
-    }
-
-    #prazoBox {
-        background: rgba(15, 23, 42, 0.5);
-    }
-
-    .modal-content {
-        background: #1e293b;
-        color: white;
-    }
+    .header { background: #161e2e; }
+    input:not([type="radio"]) { background: #0f172a; color: white; }
+    .radio-group label { background: #1e293b; color: #cbd5e1; }
+    #prazoBox { background: rgba(15, 23, 42, 0.5); }
+    .modal-content { background: #1e293b; color: white; }
 }

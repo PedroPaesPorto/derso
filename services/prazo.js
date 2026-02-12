@@ -1,5 +1,13 @@
-import { DOM } from "./dom.js";
-import { STATE } from "./state.js";
+// services/prazo.js
+
+// ✅ Use ../ para sair de services e entrar em core
+import { DOM } from "../core/dom.js"; 
+import { STATE } from "../core/state.js";
+import { CONFIG } from "../core/config.js";
+import { UI } from "../ui/manager.js";
+import { registrarLog } from "./logger.js"; // Se o logger estiver na mesma pasta, usa-se ./
+
+// ... restante do código
 
 let intervaloPrazo = null;
 

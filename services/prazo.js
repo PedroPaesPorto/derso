@@ -1,40 +1,42 @@
 // services/prazo.js
 
-// ✅ Use ../ para sair de services e entrar em core
+// ✅ Importações com caminhos corrigidos para o ambiente de subpastas
 import { DOM } from "../core/dom.js"; 
 import { STATE } from "../core/state.js";
 import { CONFIG } from "../core/config.js";
 import { UI } from "../ui/manager.js";
-import { registrarLog } from "./logger.js"; // Se o logger estiver na mesma pasta, usa-se ./
-
-// ... restante do código
+import { registrarLog } from "./logger.js"; // Mantém ./ pois estão na mesma pasta (services)
 
 let intervaloPrazo = null;
 
 export function monitorarPrazos(dataAbertura, dataFechamento) {
-
-    if (!DOM.data || !DOM.prazoBox || !DOM.timerDisplay) return;
+    // Verificação de segurança: se o DOM ainda não mapeou os elementos, evita o crash
+    if (!DOM.timerDisplay || !DOM.prazoBox) {
+        console.warn("[PRAZO] Elementos visuais não encontrados no DOM.");
+        return;
+    }
 
     const abertura = new Date(dataAbertura).getTime();
     const fechamento = new Date(dataFechamento).getTime();
-
     const hoje = new Date();
 
-    /* =============================
-       PERÍODO MÊS SEGUINTE
-    ============================= */
-
+    /* ======================================
+       CONFIGURAÇÃO DO PERÍODO PERMITIDO
+    ====================================== */
     const mesSeguinte = hoje.getMonth() + 1;
     const ano = hoje.getFullYear();
 
+    // Cria datas de início e fim do mês seguinte
     const dataMinima = new Date(ano, mesSeguinte, 1);
     const dataMaxima = new Date(ano, mesSeguinte + 1, 0);
 
-    DOM.data.min = dataMinima.toISOString().split("T")[0];
-    DOM.data.max = dataMaxima.toISOString().split("T")[0];
-    DOM.data.value = "";
-
-    criarInfoPeriodo(dataMinima, dataMaxima);
+    // Aplica limites ao input de data se ele existir
+    if (DOM.data) {
+        DOM.data.min = dataMinima.toISOString().split("T")[0];
+        DOM.data.max = dataMaxima.toISOString().split("T")[0];
+        DOM.data.value = "";
+        criarInfoPeriodo(dataMinima, dataMaxima);
+    }
 
     const nomeMesRef = dataMinima
         .toLocaleString("pt-BR", { month: "long" })
@@ -44,75 +46,69 @@ export function monitorarPrazos(dataAbertura, dataFechamento) {
 
     if (intervaloPrazo) clearInterval(intervaloPrazo);
 
+    // Inicia o Loop de atualização do Cronômetro
     intervaloPrazo = setInterval(() => {
-
         const agora = Date.now();
         const instDiv = document.getElementById("instMessage");
 
+        // Limpa classes de estado anteriores
         DOM.prazoBox.classList.remove(
-            "estado-verde",
-            "estado-alerta",
-            "estado-urgente",
-            "estado-critico",
-            "estado-sucesso",
-            "estado-inspecao"
+            "estado-verde", "estado-alerta", "estado-urgente", 
+            "estado-critico", "estado-sucesso", "estado-inspecao"
         );
 
+        /* --- CASO 1: SISTEMA AINDA NÃO ABRIU --- */
         if (agora < abertura) {
-
             STATE.isClosed = true;
-            DOM.form?.style && (DOM.form.style.display = "none");
-            instDiv?.style && (instDiv.style.display = "none");
+            if (DOM.form) DOM.form.style.display = "none";
+            if (instDiv) instDiv.style.display = "none";
 
             DOM.prazoBox.classList.add("estado-inspecao");
-
             atualizarTimer(abertura - agora, `
                 <b style="color:#1A3C6E">ESTAMOS PASSANDO EM INSPEÇÃO AO CÓDIGO.</b><br>
                 Voltamos em:
             `);
         }
 
+        /* --- CASO 2: SISTEMA JÁ FECHOU --- */
         else if (agora > fechamento) {
-
             STATE.isClosed = true;
-            DOM.form?.style && (DOM.form.style.display = "none");
-            instDiv?.style && (instDiv.style.display = "none");
+            if (DOM.form) DOM.form.style.display = "none";
+            if (instDiv) instDiv.style.display = "none";
 
             if (agora <= ultimoDiaMes) {
-
-                DOM.consultaFechada?.style && (DOM.consultaFechada.style.display = "block");
-                DOM.btnHistoryFechado?.style && (DOM.btnHistoryFechado.style.display = "block");
+                // Mostra campos de consulta se existirem
+                const consultaArea = document.getElementById("consultaFechada");
+                if (consultaArea) consultaArea.style.display = "block";
 
                 DOM.prazoBox.classList.add("estado-sucesso");
-
                 DOM.timerDisplay.innerHTML = `
                     <b style="color:#2E7D32">MISSÃO CUMPRIDA!</b><br>
                     Solicitações de <b>${nomeMesRef}</b> encerradas.
                 `;
-            }
-            else {
-                DOM.timerDisplay.innerHTML =
-                    "⌛ Aguardando novo cronograma de escalas...";
+            } else {
+                DOM.timerDisplay.innerHTML = "⌛ Aguardando novo cronograma...";
             }
         }
 
+        /* --- CASO 3: SISTEMA ABERTO (OPERACIONAL) --- */
         else {
-
             STATE.isClosed = false;
-            DOM.form?.style && (DOM.form.style.display = "block");
-            instDiv?.style && (instDiv.style.display = "block");
+            if (DOM.form) DOM.form.style.display = "block";
+            if (instDiv) instDiv.style.display = "block";
 
             const diff = fechamento - agora;
 
-            if (diff < 7200000) {
+            // Lógica de Cores por Urgência
+            if (diff < 7200000) { // 2 horas
                 DOM.prazoBox.classList.add("estado-critico");
                 atualizarTimer(diff, "🔥 EMERGÊNCIA: TEMPO ACABANDO!");
             }
-            else if (diff < 21600000) {
+            else if (diff < 21600000) { // 6 horas
                 DOM.prazoBox.classList.add("estado-urgente");
                 atualizarTimer(diff, "⚠️ RÁPIDO! O TEMPO ESTÁ ACABANDO");
             }
-            else if (diff < 86400000) {
+            else if (diff < 86400000) { // 24 horas
                 DOM.prazoBox.classList.add("estado-alerta");
                 atualizarTimer(diff, "⏳ SISTEMA FECHA EM BREVE");
             }
@@ -121,17 +117,10 @@ export function monitorarPrazos(dataAbertura, dataFechamento) {
                 atualizarTimer(diff, "⚡ OPERACIONAL ATIVO");
             }
         }
-
     }, 1000);
 }
 
-
-/* =============================
-   FUNÇÕES AUXILIARES
-============================= */
-
 function atualizarTimer(diff, titulo) {
-
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
@@ -144,9 +133,7 @@ function atualizarTimer(diff, titulo) {
 }
 
 function criarInfoPeriodo(min, max) {
-
     let info = document.getElementById("infoPeriodo");
-
     if (!info && DOM.data?.parentNode) {
         info = document.createElement("small");
         info.id = "infoPeriodo";
@@ -157,7 +144,6 @@ function criarInfoPeriodo(min, max) {
     }
 
     if (info) {
-        info.innerHTML =
-            `📅 Período permitido: <b>${min.toLocaleDateString("pt-BR")}</b> a <b>${max.toLocaleDateString("pt-BR")}</b>`;
+        info.innerHTML = `📅 Período permitido: <b>${min.toLocaleDateString("pt-BR")}</b> a <b>${max.toLocaleDateString("pt-BR")}</b>`;
     }
 }

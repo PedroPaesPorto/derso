@@ -6,11 +6,8 @@ import { DOM } from "../core/dom.js";
  */
 export const UI = {
     
-    // --- GESTÃO DE MODAIS ---
+   // --- GESTÃO DE MODAIS ---
     modal: {
-        /**
-         * Exibe o modal com configurações dinâmicas
-         */
         show(title, text, icon, color, showHistory = false) {
             if (!DOM.modal) return;
 
@@ -23,7 +20,6 @@ export const UI = {
                 iconDiv.style.color = color;
             }
 
-            // Controla a visibilidade da lista de histórico dentro do modal
             if (DOM.historyContent) {
                 DOM.historyContent.classList.toggle('is-hidden', !showHistory);
             }
@@ -31,8 +27,13 @@ export const UI = {
             DOM.modal.style.display = 'flex';
         },
 
+        // MANTENHA O CLOSE E ADICIONE O HIDE APONTANDO PARA ELE
         close() {
             if (DOM.modal) DOM.modal.style.display = 'none';
+        },
+        
+        hide() {
+            this.close(); // Agora o hide() funciona chamando o close()
         }
     },
 

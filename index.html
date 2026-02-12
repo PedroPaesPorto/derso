@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DERSO 1º BPM - Solicitação</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,22 +12,21 @@
     <div class="container">
         <div id="barraProgresso"></div>
         
-        <header class="header">
-            <div class="logos">
-                <img src="https://rondonia.ro.gov.br/wp-content/uploads/2024/09/Brasao-PMRO-370x523.png" alt="Brasão PMRO">
-                <img src="https://museu.pm.ro.gov.br/wp-content/uploads/2024/05/1-bpm-3.png" alt="Logotipo 1º BPM">
-            </div>
-            <h2>DERSO 1º BPM</h2>
-            <div class="divisor"></div>
-            <p class="subtitle">Formulário de Solicitação de Diária Especial</p>
-        </header>
-
-        <div id="loadingScreen">
+        <div id="loadingScreen" class="loading-container">
             <p id="loadingText">Sincronizando dados com o sistema...</p>
         </div>
 
         <div id="formContent" class="is-hidden">
-            
+            <header class="header">
+                <div class="logos">
+                    <img src="https://rondonia.ro.gov.br/wp-content/uploads/2024/09/Brasao-PMRO-370x523.png" alt="Brasão PMRO">
+                    <img src="https://museu.pm.ro.gov.br/wp-content/uploads/2024/05/1-bpm-3.png" alt="Logotipo 1º BPM">
+                </div>
+                <h2>DERSO 1º BPM</h2>
+                <div class="divisor"></div>
+                <p class="subtitle">Formulário de Solicitação de Diária Especial de Reforço do Serviço Operacional</p>
+            </header>
+
             <section id="prazoBox">
                 <strong class="prazoTitulo">STATUS DO SISTEMA</strong>
                 <div id="timerDisplay">⌛ CALCULANDO PRAZO...</div>
@@ -102,14 +99,11 @@
             <div id="modalIcon" style="font-size: 50px;"></div>
             <h3 id="modalTitle"></h3>
             <p id="modalText"></p>
-            
             <div id="historyContent" class="is-hidden" style="text-align: left; margin: 15px 0; max-height: 200px; overflow-y: auto;"></div> 
-            
             <button class="btn btn-primary" id="btnCloseModal">FECHAR</button>
         </div>
     </div>
 
     <script type="module" src="main.js"></script>
-
 </body>
 </html>

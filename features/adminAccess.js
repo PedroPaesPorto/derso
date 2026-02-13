@@ -41,7 +41,7 @@ function validarAcessoAdmin() {
     const matricula = input?.value.trim();
 
     // ⚠️ DEFINA AQUI SUA MATRÍCULA ADMIN
-    const ADMIN_MATRICULA = "123456"; 
+    const ADMIN_MATRICULA = "300199600"; 
 
     if (matricula === ADMIN_MATRICULA) {
         fecharModalAdmin();

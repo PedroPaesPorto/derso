@@ -9,6 +9,8 @@ import { monitorarPrazos } from "./services/prazo.js";
 import { setupEvents } from "./handlers/events.js";
 import { updateFooter } from "./services/footer.js";
 import { restaurarRascunho } from "./services/storage.js";
+import { configurarAcessoAdmin } from "./features/adminAccess.js";
+
 
 /**
  * PONTO DE ENTRADA ÚNICO (Bootstrap)
@@ -55,6 +57,9 @@ async function bootstrap() {
         applyInstitutionalTheme();
         updateFooter();
         setupEvents(); // IMPORTANTE: Isso ativa os botões e validações
+
+        // 🔐 Ativa o acesso secreto admin
+configurarAcessoAdmin();
 
         // 7. Verificação de Rascunho: Tenta recuperar o que o usuário já tinha digitado
         const rascunho = restaurarRascunho();

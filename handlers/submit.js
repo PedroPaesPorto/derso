@@ -1,13 +1,11 @@
 // handlers/submit.js
-
-// ✅ Importações corrigidas: saindo de handlers (../) para buscar nas pastas certas
 import { DOM } from "../core/dom.js";
 import { CONFIG } from "../core/config.js";
 import { STATE } from "../core/state.js";
 import { registrarLog } from "../services/logger.js";
 import { updateProgress } from "../services/progress.js";
 import { salvarRascunho } from "../services/storage.js";
-import { UI } from "../ui/manager.js"; // Centralizamos modal, loading e efeitos aqui
+import { UI } from "../ui/manager.js"; 
 
 export async function handleSubmit(e) {
     e.preventDefault();
@@ -23,8 +21,8 @@ export async function handleSubmit(e) {
     registrarLog("ENVIO", `Iniciando tentativa para matrícula: ${mLog}`);
 
     try {
-        // Usando o objeto UI centralizado
-        UI.form.lock(); 
+        // ✅ NOMES CORRIGIDOS PARA BATER COM O MANAGER.JS
+        UI.feedback.lockForm(); 
         UI.loading.show("ENVIANDO...");
 
         const formData = new URLSearchParams(new FormData(DOM.form));
@@ -61,8 +59,8 @@ export async function handleSubmit(e) {
             );
 
             limparFormulario();
-            UI.effects.flash(DOM.form);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            UI.feedback.flash(DOM.form); // Corrigido de effects para feedback
+            UI.feedback.scrollToTop();   // Usa a função do manager
 
         } else {
             tratarErroServidor(response);
@@ -70,7 +68,7 @@ export async function handleSubmit(e) {
 
     } catch (err) {
         registrarLog("ERRO_CRITICO", err.message, "ERRO");
-        UI.effects.shake(DOM.form);
+        UI.feedback.shake(DOM.form); // Corrigido de effects para feedback
 
         UI.modal.show(
             "ERRO DE CONEXÃO",
@@ -81,7 +79,7 @@ export async function handleSubmit(e) {
             "red"
         );
     } finally {
-        UI.form.unlock();
+        UI.feedback.unlockForm(); // Corrigido
         UI.loading.hide();
     }
 }
@@ -91,10 +89,13 @@ export async function handleSubmit(e) {
 ====================================== */
 
 function limparFormulario() {
-    DOM.form.reset();
-    updateProgress();
-    salvarRascunho({}); // Limpa rascunho salvo
-    registrarLog("FORM_RESET", "Formulário limpo após envio");
+    if (DOM.form) {
+        DOM.form.reset();
+        // Chama o progress do manager diretamente
+        UI.updateProgress(); 
+        salvarRascunho({}); 
+        registrarLog("FORM_RESET", "Formulário limpo após envio");
+    }
 }
 
 function tratarErroServidor(response) {
@@ -117,5 +118,5 @@ function tratarErroServidor(response) {
         "⚠️",
         "orange"
     );
-    UI.effects.shake(DOM.form);
+    UI.feedback.shake(DOM.form); // Corrigido
 }

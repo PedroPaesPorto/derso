@@ -24,6 +24,6 @@ export function configurarAcessoAdmin() {
 function abrirModalAdmin() {
     const modal = document.getElementById("adminLoginModal");
     if (modal) {
-        modal.style.display = "flex";
+        modal.classList.remove("is-hidden");
     }
 }

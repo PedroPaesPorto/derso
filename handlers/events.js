@@ -118,54 +118,40 @@ async function carregarHistorico(matriculaOriginal) {
         matricula = "1000" + matricula;
     }
 
-    // --- DEBUG: VAMOS VER O QUE ESTÁ ACONTECENDO ---
-    console.log("🔍 Tentando buscar matrícula:", matricula);
-    console.log("📦 Conteúdo do STATE no momento:", STATE.employeeList);
-    
+    // Pega o nome do STATE (já vimos que está funcionando)
     const dadosMilitar = STATE.employeeList[matricula];
-    console.log("👤 Dados encontrados para este militar:", dadosMilitar);
-
-    // Lógica Robusta para capturar o nome
-    let nomeMilitar = "MILITAR NÃO IDENTIFICADO";
-
-    if (dadosMilitar) {
-        if (typeof dadosMilitar === "object") {
-            // Tenta 'nome', 'NOME' ou 'nome_completo'
-            nomeMilitar = dadosMilitar.nome || dadosMilitar.NOME || dadosMilitar.nome_completo || "Nome não definido no objeto";
-        } else {
-            nomeMilitar = dadosMilitar; // Se for apenas uma string simples
-        }
-    } else if (DOM.nome && DOM.nome.value) {
-        nomeMilitar = DOM.nome.value; // Pega o que já está no input do form
-    }
-
-    console.log("✅ Nome final que será exibido:", nomeMilitar);
+    const nomeMilitar = dadosMilitar ? (dadosMilitar.nome || dadosMilitar) : (DOM.nome?.value || "MILITAR");
 
     try {
         UI.loading.show("Buscando registros...");
         const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        const conteudoHTML = `
-            <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-                <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
-                    ${nomeMilitar}
-                </span>
-            </div>
-            <div style="max-height: 300px; overflow-y: auto;">
-                ${listaFinal.length > 0 
-                    ? listaFinal.map(item => `
-                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f5f5f5;">
-                            <span>📅 <b>${item.data}</b></span>
-                            <span style="font-weight: bold; color: #1a3c6e;">${item.tipo || item.folga || "48H"}</span>
-                        </div>
-                    `).join("")
-                    : '<p style="text-align:center; padding: 20px;">Nenhum registro encontrado.</p>'
-                }
-            </div>
-        `;
+        // 1. Primeiro, mostramos o modal básico (Título e Ícone)
+        UI.modal.show("HISTÓRICO", "Carregando...", "📜", "#1a3c6e");
 
-        UI.modal.show("HISTÓRICO", conteudoHTML, "📜", "#1a3c6e", true);
+        // 2. Agora injetamos o HTML trabalhado direto no corpo do modal
+        // O DOM.historyContent é o local onde a lista aparece
+        if (DOM.historyContent) {
+            DOM.historyContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                    <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
+                        ${nomeMilitar}
+                    </span>
+                </div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${listaFinal.length > 0 
+                        ? listaFinal.map(item => `
+                            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f5f5f5;">
+                                <span>📅 <b>${item.data}</b></span>
+                                <span style="font-weight: bold; color: #1a3c6e;">${item.tipo || item.folga || "48H"}</span>
+                            </div>
+                        `).join("")
+                        : '<p style="text-align:center; padding: 20px;">Nenhum registro encontrado.</p>'
+                    }
+                </div>
+            `;
+        }
 
     } catch (err) {
         UI.modal.show("ERRO", "Falha ao carregar dados.", "❌", "red");

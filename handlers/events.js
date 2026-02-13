@@ -109,59 +109,66 @@ export function setupEvents() {
 ====================================== */
 async function carregarHistorico(matriculaOriginal) {
     if (!matriculaOriginal) {
-        UI.modal.show("AVISO", "Informe uma matrícula válida para consultar o histórico.", "⚠️", "orange");
+        UI.modal.show("AVISO", "Informe uma matrícula válida.", "⚠️", "orange");
         return;
     }
 
-    // 1. Garante que a matrícula esteja no formato completo (1000...) para buscar no STATE
     let matricula = matriculaOriginal.trim();
     if (matricula.length <= 6 && !matricula.startsWith("1000")) {
         matricula = "1000" + matricula;
     }
 
-    // 2. Busca o nome do militar no STATE
-    const dadosMilitar = STATE.employeeList[matricula];
+    // --- DEBUG: VAMOS VER O QUE ESTÁ ACONTECENDO ---
+    console.log("🔍 Tentando buscar matrícula:", matricula);
+    console.log("📦 Conteúdo do STATE no momento:", STATE.employeeList);
     
-    // Se não achar no STATE, tenta pegar o que estiver escrito no campo Nome do formulário
-    const nomeMilitar = dadosMilitar 
-        ? (typeof dadosMilitar === "object" ? dadosMilitar.nome : dadosMilitar)
-        : (DOM.nome?.value || "MILITAR NÃO IDENTIFICADO");
+    const dadosMilitar = STATE.employeeList[matricula];
+    console.log("👤 Dados encontrados para este militar:", dadosMilitar);
+
+    // Lógica Robusta para capturar o nome
+    let nomeMilitar = "MILITAR NÃO IDENTIFICADO";
+
+    if (dadosMilitar) {
+        if (typeof dadosMilitar === "object") {
+            // Tenta 'nome', 'NOME' ou 'nome_completo'
+            nomeMilitar = dadosMilitar.nome || dadosMilitar.NOME || dadosMilitar.nome_completo || "Nome não definido no objeto";
+        } else {
+            nomeMilitar = dadosMilitar; // Se for apenas uma string simples
+        }
+    } else if (DOM.nome && DOM.nome.value) {
+        nomeMilitar = DOM.nome.value; // Pega o que já está no input do form
+    }
+
+    console.log("✅ Nome final que será exibido:", nomeMilitar);
 
     try {
         UI.loading.show("Buscando registros...");
-        
         const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        if (listaFinal.length === 0) {
-            UI.modal.show("HISTÓRICO", `Nenhum registro encontrado para:<br><b style="color:#d32f2f">${nomeMilitar}</b>`, "ℹ️", "#1976D2");
-            return;
-        }
-
-        // 3. Monta o HTML com o Título, Nome e a Lista
         const conteudoHTML = `
             <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-                <span style="display: block; color: #666; font-size: 0.8rem; font-weight: bold; margin-bottom: 4px;">POLICIAL MILITAR</span>
-                <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; line-height: 1.2;">
+                <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
                     ${nomeMilitar}
                 </span>
             </div>
-            <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
-                ${listaFinal.map(item => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding: 10px 5px; font-size: 0.95rem;">
-                        <span>📅 <b>${item.data}</b></span>
-                        <span style="color: #1a3c6e; font-weight: bold;">${item.tipo || item.folga || "48H"}</span>
-                    </div>
-                `).join("")}
+            <div style="max-height: 300px; overflow-y: auto;">
+                ${listaFinal.length > 0 
+                    ? listaFinal.map(item => `
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f5f5f5;">
+                            <span>📅 <b>${item.data}</b></span>
+                            <span style="font-weight: bold; color: #1a3c6e;">${item.tipo || item.folga || "48H"}</span>
+                        </div>
+                    `).join("")
+                    : '<p style="text-align:center; padding: 20px;">Nenhum registro encontrado.</p>'
+                }
             </div>
         `;
 
         UI.modal.show("HISTÓRICO", conteudoHTML, "📜", "#1a3c6e", true);
-        registrarLog("HISTORICO", `Consulta: ${matricula} (${nomeMilitar})`, "INFO");
 
     } catch (err) {
-        console.error("Erro no histórico:", err);
-        UI.modal.show("ERRO", "Falha ao conectar com o banco de dados.", "❌", "red");
+        UI.modal.show("ERRO", "Falha ao carregar dados.", "❌", "red");
     } finally {
         UI.loading.hide();
     }

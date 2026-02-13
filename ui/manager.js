@@ -6,34 +6,51 @@ import { DOM } from "../core/dom.js";
  */
 export const UI = {
     
-   // --- GESTÃO DE MODAIS ---
+    // --- GESTÃO DE MODAIS ---
     modal: {
+        /**
+         * Exibe o modal com configurações dinâmicas
+         */
         show(title, text, icon, color, showHistory = false) {
             if (!DOM.modal) return;
 
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalText').textContent = text;
+            // 1. Garante que o modal fique visível
+            DOM.modal.classList.remove('is-hidden');
+            DOM.modal.style.display = 'flex';
 
+            // 2. Preenche os textos básicos
+            document.getElementById('modalTitle').textContent = title;
+            
+            // Usamos innerHTML para permitir que o histórico formatado (com <div>) apareça
+            document.getElementById('modalText').innerHTML = showHistory ? "" : text;
+
+            // 3. Configura o ícone
             const iconDiv = document.getElementById('modalIcon');
             if (iconDiv) {
                 iconDiv.textContent = icon;
                 iconDiv.style.color = color;
             }
 
+            // 4. Controla o conteúdo do Histórico
             if (DOM.historyContent) {
                 DOM.historyContent.classList.toggle('is-hidden', !showHistory);
+                if (showHistory) {
+                    DOM.historyContent.innerHTML = text; // Aqui entra o conteúdo do .map()
+                }
             }
-
-            DOM.modal.style.display = 'flex';
         },
 
-        // MANTENHA O CLOSE E ADICIONE O HIDE APONTANDO PARA ELE
+        /** Fecha o modal e limpa os estados */
         close() {
-            if (DOM.modal) DOM.modal.style.display = 'none';
+            if (DOM.modal) {
+                DOM.modal.style.display = 'none';
+                DOM.modal.classList.add('is-hidden');
+            }
         },
-        
+
+        /** Atalho para compatibilidade com outros scripts */
         hide() {
-            this.close(); // Agora o hide() funciona chamando o close()
+            this.close();
         }
     },
 
@@ -41,10 +58,14 @@ export const UI = {
     loading: {
         show(message = "A carregar...") {
             if (!DOM.loading) return;
-            DOM.loading.textContent = message;
+            
+            // Seleciona o texto dentro do loading sem apagar o Spinner
+            const textEl = document.getElementById('loadingText') || DOM.loading;
+            textEl.textContent = message;
+            
             DOM.loading.classList.remove("is-hidden");
             
-            // Esconde o formulário enquanto carrega para um visual mais limpo
+            // Esconde o formulário enquanto carrega
             DOM.formContent?.classList.add("is-hidden");
         },
 
@@ -57,24 +78,24 @@ export const UI = {
 
     // --- FEEDBACKS VISUAIS E ANIMAÇÕES ---
     feedback: {
-        /** Bloqueia o formulário durante o envio */
         lockForm() {
             DOM.form?.classList.add("form-locked");
+            const btn = document.getElementById('btnEnviar');
+            if (btn) btn.disabled = true;
         },
 
-        /** Desbloqueia o formulário */
         unlockForm() {
             DOM.form?.classList.remove("form-locked");
+            const btn = document.getElementById('btnEnviar');
+            if (btn) btn.disabled = false;
         },
 
-        /** Animação de erro (abanar) */
         shake(el) {
             if (!el) return;
             el.classList.add("ui-shake");
             setTimeout(() => el.classList.remove("ui-shake"), 600);
         },
 
-        /** Animação de sucesso (brilho/flash) */
         flash(el) {
             if (!el) return;
             el.classList.add("ui-flash");
@@ -93,10 +114,10 @@ export const UI = {
         if (!DOM.barra || !DOM.email || !DOM.nome || !DOM.data) return;
 
         const checks = [
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(DOM.email.value.trim()), // Email válido
-            DOM.nome.value.trim().length > 3,                         // Nome preenchido
-            !!document.querySelector('input[name="folga"]:checked'),  // Tipo de folga selecionado
-            DOM.data.value.trim() !== ""                              // Data selecionada
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(DOM.email.value.trim()), 
+            DOM.nome.value.trim().length > 3,                         
+            !!document.querySelector('input[name="folga"]:checked'),  
+            DOM.data.value.trim() !== ""                              
         ];
 
         const total = checks.length;
@@ -117,7 +138,7 @@ export const UI = {
             btn.textContent = text;
         } else {
             btn.disabled = false;
-            btn.textContent = btn.dataset.originalText || "ENVIAR";
+            btn.textContent = btn.dataset.originalText || "ENVIAR SOLICITAÇÃO";
         }
     }
 };

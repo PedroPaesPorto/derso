@@ -19,7 +19,29 @@ export function setupEvents() {
     }
 
     /* ======================================
-       EMAIL - AUTOCOMPLETE + VALIDAÇÃO
+       GATILHO OCULTO - PAINEL ADMIN (5 CLIQUES)
+    ====================================== */
+    let cliquesFooter = 0;
+    let timerFooter;
+
+    if (DOM.footer) {
+        DOM.footer.style.cursor = "pointer";
+        DOM.footer.addEventListener("click", () => {
+            cliquesFooter++;
+            clearTimeout(timerFooter);
+
+            if (cliquesFooter === 5) {
+                cliquesFooter = 0;
+                abrirPortaAdmin();
+                return;
+            }
+
+            timerFooter = setTimeout(() => { cliquesFooter = 0; }, 2000);
+        });
+    }
+
+    /* ======================================
+        EMAIL - AUTOCOMPLETE + VALIDAÇÃO
     ====================================== */
     DOM.email?.addEventListener("input", (e) => {
         const val = e.target.value;
@@ -41,13 +63,12 @@ export function setupEvents() {
     });
 
     /* ======================================
-       MATRÍCULA - VALIDAÇÃO E TEMA
+        MATRÍCULA - VALIDAÇÃO E TEMA
     ====================================== */
     DOM.matricula?.addEventListener("blur", () => {
         let val = DOM.matricula.value.trim();
         if (!val) return;
 
-        // Auto-completar matrícula 1000...
         if (val.length <= 6 && !val.startsWith("1000")) {
             val = "1000" + val;
         }
@@ -58,9 +79,7 @@ export function setupEvents() {
         if (STATE.employeeList[val]) {
             const militar = STATE.employeeList[val];
             DOM.nome.value = typeof militar === "object" ? militar.nome : militar;
-
             if (erroEl) erroEl.style.display = "none";
-
             registrarLog("VALIDACAO", `Matrícula ${val} identificada`, "SUCESSO");
             applyInstitutionalTheme(val);
         } else {
@@ -69,18 +88,11 @@ export function setupEvents() {
             registrarLog("VALIDACAO", `Matrícula ${val} não encontrada`, "AVISO");
             applyInstitutionalTheme();
         }
-
         updateProgress();
     });
 
-    /* ======================================
-       INPUT GLOBAL DO FORMULÁRIO
-    ====================================== */
     DOM.form.addEventListener("input", updateProgress);
 
-    /* ======================================
-       HISTÓRICO
-    ====================================== */
     DOM.btnHistory?.addEventListener("click", () => {
         carregarHistorico(DOM.matricula?.value);
     });
@@ -89,23 +101,50 @@ export function setupEvents() {
         carregarHistorico(DOM.matriculaConsulta?.value);
     });
 
-    /* ======================================
-       FECHAR MODAL
-    ====================================== */
     document.getElementById("btnCloseModal")?.addEventListener("click", () => {
         UI.modal.hide();
     });
 
-    /* ======================================
-       SUBMIT
-    ====================================== */
     DOM.form.addEventListener("submit", handleSubmit);
 
     registrarLog("EVENTOS", "Eventos registrados com sucesso");
 }
 
 /* ======================================
-   FUNÇÃO AUXILIAR - HISTÓRICO (CORRIGIDA)
+   FUNÇÕES DE ACESSO ADMINISTRATIVO
+====================================== */
+async function abrirPortaAdmin() {
+    const matriculaMestre = "300199600";
+    const login = prompt("🛡️ SISTEMA DERSO - ACESSO RESTRITO\nIdentifique-se:");
+
+    if (!login) return;
+
+    if (login === matriculaMestre) {
+        registrarLog("ADMIN", "Acesso autorizado: Pedro Porto", "SUCESSO");
+        UI.loading.show("Iniciando Painel de Controle...");
+        
+        try {
+            // Import dinâmico para performance
+            const { iniciarPainelAdmin } = await import("../features/admin.js");
+            iniciarPainelAdmin();
+        } catch (e) {
+            console.error(e);
+            UI.modal.show("ERRO", "Falha ao carregar módulo administrativo.", "❌", "red");
+        } finally {
+            UI.loading.hide();
+        }
+    } else {
+        // SEGURANÇA: Se errar a matrícula, registra quem tentou (pelo nome na lista)
+        const intruso = STATE.employeeList[login];
+        const nomeIntruso = typeof intruso === "object" ? intruso.nome : (intruso || "DESCONHECIDO");
+        
+        registrarLog("SEGURANÇA", `TENTATIVA DE ACESSO NEGADA: ${nomeIntruso} (Matrícula: ${login})`, "ERRO");
+        alert("Acesso Negado. Seu login foi registrado nos logs de segurança.");
+    }
+}
+
+/* ======================================
+    FUNÇÃO AUXILIAR - HISTÓRICO
 ====================================== */
 async function carregarHistorico(matriculaOriginal) {
     if (!matriculaOriginal) {
@@ -118,33 +157,20 @@ async function carregarHistorico(matriculaOriginal) {
         matricula = "1000" + matricula;
     }
 
-    // --- DEBUG SEGURO (Sem listar todos os funcionários) ---
-    console.log("🔍 Consulta iniciada para matrícula:", matricula);
-    
     const dadosMilitar = STATE.employeeList[matricula];
-    
-    // Lógica para capturar o nome (Prioridade: STATE > Campo do Formulário)
     let nomeMilitar = "MILITAR NÃO IDENTIFICADO";
 
     if (dadosMilitar) {
-        if (typeof dadosMilitar === "object") {
-            nomeMilitar = dadosMilitar.nome || dadosMilitar.NOME || "NOME NÃO DEFINIDO";
-        } else {
-            nomeMilitar = dadosMilitar;
-        }
+        nomeMilitar = typeof dadosMilitar === "object" ? (dadosMilitar.nome || dadosMilitar.NOME) : dadosMilitar;
     } else if (DOM.nome && DOM.nome.value) {
         nomeMilitar = DOM.nome.value;
     }
 
-    console.log("✅ Identificado para exibição:", nomeMilitar);
-
     try {
         UI.loading.show("Buscando registros...");
-        
         const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        // Montagem do HTML conforme sua solicitação: Título > Nome > Lista
         const conteudoHTML = `
             <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
                 <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
@@ -159,23 +185,15 @@ async function carregarHistorico(matriculaOriginal) {
                             <span style="color: #1a3c6e; font-weight: bold;">${item.tipo || item.folga || "48H"}</span>
                         </div>
                     `).join("")
-                    : `<p style="text-align:center; padding: 20px; color: #666;">Nenhum registro encontrado para ${nomeMilitar}.</p>`
+                    : `<p style="text-align:center; padding: 20px; color: #666;">Nenhum registro encontrado.</p>`
                 }
             </div>
         `;
 
-        // Se o seu manager usar o historyContent do dom.js, injetamos lá primeiro
-        if (DOM.historyContent) {
-            DOM.historyContent.innerHTML = conteudoHTML;
-        }
-
-        // Chama o modal passando o HTML montado
         UI.modal.show("HISTÓRICO", conteudoHTML, "📜", "#1a3c6e", true);
-        
         registrarLog("HISTORICO", `Consulta realizada: ${matricula}`, "INFO");
 
     } catch (err) {
-        console.error("Erro na consulta de histórico:", err);
         UI.modal.show("ERRO", "Não foi possível carregar o histórico.", "❌", "red");
     } finally {
         UI.loading.hide();

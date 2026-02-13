@@ -118,49 +118,66 @@ async function carregarHistorico(matriculaOriginal) {
         matricula = "1000" + matricula;
     }
 
-    // Busca o nome (Já vimos no console que o STATE está OK)
-    const militar = STATE.employeeList[matricula];
-    const nomeMilitar = militar ? (militar.nome || militar) : (DOM.nome?.value || "MILITAR");
+    // --- DEBUG SEGURO (Sem listar todos os funcionários) ---
+    console.log("🔍 Consulta iniciada para matrícula:", matricula);
+    
+    const dadosMilitar = STATE.employeeList[matricula];
+    
+    // Lógica para capturar o nome (Prioridade: STATE > Campo do Formulário)
+    let nomeMilitar = "MILITAR NÃO IDENTIFICADO";
+
+    if (dadosMilitar) {
+        if (typeof dadosMilitar === "object") {
+            nomeMilitar = dadosMilitar.nome || dadosMilitar.NOME || "NOME NÃO DEFINIDO";
+        } else {
+            nomeMilitar = dadosMilitar;
+        }
+    } else if (DOM.nome && DOM.nome.value) {
+        nomeMilitar = DOM.nome.value;
+    }
+
+    console.log("✅ Identificado para exibição:", nomeMilitar);
 
     try {
-        // 1. Mostra o loading usando o ID que está no seu dom.js (loadingScreen)
         UI.loading.show("Buscando registros...");
-
+        
         const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        // 2. Limpa e Prepara o historyContent (mapeado no seu dom.js)
+        // Montagem do HTML conforme sua solicitação: Título > Nome > Lista
+        const conteudoHTML = `
+            <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
+                    ${nomeMilitar}
+                </span>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                ${listaFinal.length > 0 
+                    ? listaFinal.map(item => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding: 10px 5px; font-size: 0.95rem;">
+                            <span>📅 <b>${item.data}</b></span>
+                            <span style="color: #1a3c6e; font-weight: bold;">${item.tipo || item.folga || "48H"}</span>
+                        </div>
+                    `).join("")
+                    : `<p style="text-align:center; padding: 20px; color: #666;">Nenhum registro encontrado para ${nomeMilitar}.</p>`
+                }
+            </div>
+        `;
+
+        // Se o seu manager usar o historyContent do dom.js, injetamos lá primeiro
         if (DOM.historyContent) {
-            DOM.historyContent.innerHTML = `
-                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-                    <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
-                        ${nomeMilitar}
-                    </span>
-                </div>
-                <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
-                    ${listaFinal.length > 0 
-                        ? listaFinal.map(item => `
-                            <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f5f5f5;">
-                                <span>📅 <b>${item.data}</b></span>
-                                <span style="font-weight: bold; color: #1a3c6e;">${item.tipo || item.folga || "48H"}</span>
-                            </div>
-                        `).join("")
-                        : '<p style="text-align:center; padding: 20px;">Nenhum registro encontrado.</p>'
-                    }
-                </div>
-            `;
+            DOM.historyContent.innerHTML = conteudoHTML;
         }
 
-        // 3. Esconde o loading primeiro!
-        UI.loading.hide();
-
-        // 4. Abre o modal. 
-        // Passamos o conteúdo como vazio "" porque o historyContent já foi preenchido acima
-        UI.modal.show("HISTÓRICO", "", "📜", "#1a3c6e", true);
+        // Chama o modal passando o HTML montado
+        UI.modal.show("HISTÓRICO", conteudoHTML, "📜", "#1a3c6e", true);
+        
+        registrarLog("HISTORICO", `Consulta realizada: ${matricula}`, "INFO");
 
     } catch (err) {
+        console.error("Erro na consulta de histórico:", err);
+        UI.modal.show("ERRO", "Não foi possível carregar o histórico.", "❌", "red");
+    } finally {
         UI.loading.hide();
-        console.error("Erro no histórico:", err);
-        UI.modal.show("ERRO", "Falha ao carregar dados.", "❌", "red");
     }
 }

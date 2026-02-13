@@ -12,6 +12,7 @@ import { UI } from "../ui/manager.js";
 import { applyInstitutionalTheme } from "../services/theme.js";
 
 export function setupEvents() {
+    if (STATE.isAdminMode) return;
 
     if (!DOM.form) {
         console.warn("Formulário não encontrado.");

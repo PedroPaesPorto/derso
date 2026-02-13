@@ -44,6 +44,7 @@ async function bootstrap() {
 
         // 4. População do Estado (STATE): Salva a lista de policiais na memória
         STATE.employeeList = lData || {};
+        window.STATE = STATE;  // <-- ADICIONE ESSA LINHA AQUI
         registrarLog("SISTEMA", "Dados carregados com sucesso.", "SUCESSO");
 
         // 5. Ativação de Serviços: Monitora se o formulário está dentro do horário

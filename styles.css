@@ -286,3 +286,67 @@ input:focus {
     .radio-group label { background: #1e293b; color: #cbd5e1; }
     #prazoBox { background: rgba(15, 23, 42, 0.5); }
 }
+
+/* ==========================================================================
+   CONFIGURAÇÃO DO MODAL (ESTAVA FALTANDO!)
+   ========================================================================== */
+.modal {
+    display: none; /* Mantém escondido por padrão */
+    position: fixed;
+    inset: 0; /* Ocupa a tela toda */
+    background: rgba(15, 23, 42, 0.85); /* Fundo escuro transparente */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    backdrop-filter: blur(5px); /* Efeito de desfoque no fundo */
+}
+
+.modal-content {
+    background: var(--branco-card);
+    padding: 30px;
+    border-radius: var(--raio-padrao);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalEntrada 0.3s ease-out;
+}
+
+@keyframes modalEntrada {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+#modalIcon {
+    font-size: 50px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#modalTitle {
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 10px;
+    color: var(--azul-marinho);
+    text-transform: uppercase;
+}
+
+#modalText {
+    font-size: 15px;
+    color: var(--texto-secundario);
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Estilo para a lista de histórico dentro do modal */
+.historico-item {
+    background: rgba(0,0,0,0.03);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    border-left: 4px solid var(--azul-marinho);
+}

@@ -9,17 +9,20 @@ import { registrarLog } from "../services/logger.js";
  * Inicia o Painel Administrativo Completo
  */
 export async function iniciarPainelAdmin() {
+    STATE.isAdminMode = true;
     registrarLog("ADMIN", "Iniciando Dashboard Operacional", "INFO");
 
-    // 1. Substitui o formulário pela interface de Dashboard
-    DOM.formContent.innerHTML = `
+      // 1. Substitui o formulário pela interface de Dashboard
+DOM.formContent.replaceChildren();
+DOM.formContent.innerHTML = `
+
         <div class="admin-wrapper">
             <div class="admin-header">
                 <div>
                     <h3 style="margin:0; color:var(--azul-marinho);">📊 PAINEL DERSO</h3>
                     <small style="color:var(--texto-secundario);">Gestão de Escala 1º BPM</small>
                 </div>
-                <button onclick="location.reload()" class="btn-exit">SAIR</button>
+                <button id="btnAdminExit" class="btn-exit">SAIR</button>
             </div>
 
             <div class="admin-stats">
@@ -59,8 +62,9 @@ export async function iniciarPainelAdmin() {
     await carregarDadosGlobais();
 
     // 3. Eventos de Busca e Exportação
-    document.getElementById("adminSearch")?.addEventListener("input", filtrarPainel);
-    document.getElementById("btnExportCSV")?.addEventListener("click", exportarParaEscala);
+   document.getElementById("adminSearch")?.addEventListener("input", filtrarPainel);
+document.getElementById("btnExportCSV")?.addEventListener("click", exportarParaEscala);
+document.getElementById("btnAdminExit")?.addEventListener("click", () => location.reload());
 }
 
 async function carregarDadosGlobais() {

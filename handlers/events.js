@@ -118,20 +118,18 @@ async function carregarHistorico(matriculaOriginal) {
         matricula = "1000" + matricula;
     }
 
-    // Pega o nome do STATE (já vimos que está funcionando)
-    const dadosMilitar = STATE.employeeList[matricula];
-    const nomeMilitar = dadosMilitar ? (dadosMilitar.nome || dadosMilitar) : (DOM.nome?.value || "MILITAR");
+    // Busca o nome (Já vimos no console que o STATE está OK)
+    const militar = STATE.employeeList[matricula];
+    const nomeMilitar = militar ? (militar.nome || militar) : (DOM.nome?.value || "MILITAR");
 
     try {
+        // 1. Mostra o loading usando o ID que está no seu dom.js (loadingScreen)
         UI.loading.show("Buscando registros...");
+
         const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        // 1. Primeiro, mostramos o modal básico (Título e Ícone)
-        UI.modal.show("HISTÓRICO", "Carregando...", "📜", "#1a3c6e");
-
-        // 2. Agora injetamos o HTML trabalhado direto no corpo do modal
-        // O DOM.historyContent é o local onde a lista aparece
+        // 2. Limpa e Prepara o historyContent (mapeado no seu dom.js)
         if (DOM.historyContent) {
             DOM.historyContent.innerHTML = `
                 <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
@@ -139,7 +137,7 @@ async function carregarHistorico(matriculaOriginal) {
                         ${nomeMilitar}
                     </span>
                 </div>
-                <div style="max-height: 300px; overflow-y: auto;">
+                <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
                     ${listaFinal.length > 0 
                         ? listaFinal.map(item => `
                             <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f5f5f5;">
@@ -153,9 +151,16 @@ async function carregarHistorico(matriculaOriginal) {
             `;
         }
 
-    } catch (err) {
-        UI.modal.show("ERRO", "Falha ao carregar dados.", "❌", "red");
-    } finally {
+        // 3. Esconde o loading primeiro!
         UI.loading.hide();
+
+        // 4. Abre o modal. 
+        // Passamos o conteúdo como vazio "" porque o historyContent já foi preenchido acima
+        UI.modal.show("HISTÓRICO", "", "📜", "#1a3c6e", true);
+
+    } catch (err) {
+        UI.loading.hide();
+        console.error("Erro no histórico:", err);
+        UI.modal.show("ERRO", "Falha ao carregar dados.", "❌", "red");
     }
 }

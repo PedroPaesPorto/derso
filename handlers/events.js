@@ -122,22 +122,30 @@ async function carregarHistorico(matricula) {
     }
 
     try {
-        const historico = await buscarHistorico(matricula);
+        const resultado = await buscarHistorico(matricula);
+        
+        // Se o resultado vier dentro de uma propriedade (ex: resultado.dados), a gente extrai
+        const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
-        if (!historico || historico.length === 0) {
+        if (listaFinal.length === 0) {
             UI.modal.show("HISTÓRICO", "Nenhum registro encontrado.", "ℹ️", "#1976D2");
             return;
         }
 
-        const conteudo = historico
-            .map(item => `${item.data} - ${item.tipo || "Registro"}`)
-            .join("<br>");
+        // Criando o conteúdo formatado
+        const conteudo = listaFinal
+            .map(item => `
+                <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
+                    <strong>📅 ${item.data}</strong> - ${item.tipo || item.folga || "Registro"}
+                </div>
+            `)
+            .join("");
 
-        UI.modal.show("HISTÓRICO", conteudo, "📜", "#1976D2");
-
+        UI.modal.show("HISTÓRICO", conteudo, "📜", "#1976D2", true);
         registrarLog("HISTORICO", `Consulta realizada: ${matricula}`, "INFO");
 
     } catch (err) {
+        console.error("Erro detalhado:", err);
         registrarLog("HISTORICO_ERRO", err.message, "ERRO");
         UI.modal.show("ERRO", "Não foi possível buscar o histórico.", "❌", "red");
     }

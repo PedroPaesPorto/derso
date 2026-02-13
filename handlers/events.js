@@ -1,16 +1,15 @@
 // handlers/events.js
 
-// 1. IMPORTAÇÕES CORRIGIDAS (Saindo de handlers para buscar em outras pastas)
+// 1. IMPORTAÇÕES
 import { DOM } from "../core/dom.js";
 import { CONFIG } from "../core/config.js";
 import { STATE } from "../core/state.js";
 import { registrarLog } from "../services/logger.js";
-import { updateProgress } from "../services/progress.js"; // Se estiver em services
-import { handleSubmit } from "./submit.js";           // Continua ./ pois está na pasta handlers
-import { buscarHistorico } from "../core/api.js";      // Conforme sua imagem, api.js está em core
-import { UI } from "../ui/manager.js";                // Usaremos UI.modal.show em vez de showModal solto
+import { updateProgress } from "../services/progress.js";
+import { handleSubmit } from "./submit.js";
+import { buscarHistorico } from "../core/api.js";
+import { UI } from "../ui/manager.js";
 import { applyInstitutionalTheme } from "../services/theme.js";
-
 
 export function setupEvents() {
 
@@ -40,7 +39,6 @@ export function setupEvents() {
         DOM.email.classList.toggle("valido", emailValido);
         updateProgress();
     });
-
 
     /* ======================================
        MATRÍCULA - VALIDAÇÃO E TEMA
@@ -75,12 +73,10 @@ export function setupEvents() {
         updateProgress();
     });
 
-
     /* ======================================
        INPUT GLOBAL DO FORMULÁRIO
     ====================================== */
     DOM.form.addEventListener("input", updateProgress);
-
 
     /* ======================================
        HISTÓRICO
@@ -93,14 +89,12 @@ export function setupEvents() {
         carregarHistorico(DOM.matriculaConsulta?.value);
     });
 
-
     /* ======================================
        FECHAR MODAL
     ====================================== */
     document.getElementById("btnCloseModal")?.addEventListener("click", () => {
-        UI.modal.hide(); // Usando o gerenciador de UI padrão
+        UI.modal.hide();
     });
-
 
     /* ======================================
        SUBMIT
@@ -110,43 +104,58 @@ export function setupEvents() {
     registrarLog("EVENTOS", "Eventos registrados com sucesso");
 }
 
-
-
 /* ======================================
-   FUNÇÃO AUXILIAR - HISTÓRICO
+   FUNÇÃO AUXILIAR - HISTÓRICO (REVISADA)
 ====================================== */
 async function carregarHistorico(matricula) {
     if (!matricula) {
-        UI.modal.show("AVISO", "Informe uma matrícula válida.", "⚠️", "orange");
+        UI.modal.show("AVISO", "Informe uma matrícula válida para consultar o histórico.", "⚠️", "orange");
         return;
     }
 
+    // Identifica o nome do policial para o cabeçalho
+    const dadosMilitar = STATE.employeeList[matricula];
+    const nomeMilitar = typeof dadosMilitar === "object" ? dadosMilitar.nome : (dadosMilitar || "Militar não identificado");
+
     try {
-        const resultado = await buscarHistorico(matricula);
+        UI.loading.show("Buscando registros...");
         
-        // Se o resultado vier dentro de uma propriedade (ex: resultado.dados), a gente extrai
+        const resultado = await buscarHistorico(matricula);
         const listaFinal = Array.isArray(resultado) ? resultado : (resultado?.dados || []);
 
         if (listaFinal.length === 0) {
-            UI.modal.show("HISTÓRICO", "Nenhum registro encontrado.", "ℹ️", "#1976D2");
+            UI.modal.show("HISTÓRICO", `Nenhum registro encontrado para:<br><b>${nomeMilitar}</b>`, "ℹ️", "#1976D2");
             return;
         }
 
-        // Criando o conteúdo formatado
-        const conteudo = listaFinal
-            .map(item => `
-                <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                    <strong>📅 ${item.data}</strong> - ${item.tipo || item.folga || "Registro"}
-                </div>
-            `)
-            .join("");
+        // Criando o conteúdo formatado conforme a imagem solicitada
+        // Título já é passado no UI.modal.show, aqui montamos o Subtítulo (Nome) e a Lista
+        const conteudoHTML = `
+            <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <span style="display: block; color: #1a3c6e; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
+                    ${nomeMilitar}
+                </span>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+                ${listaFinal.map(item => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding: 10px 5px; font-size: 0.95rem;">
+                        <span>📅 <b>${item.data}</b></span>
+                        <span style="color: #666; font-weight: 500;">${item.tipo || item.folga || "48H"}</span>
+                    </div>
+                `).join("")}
+            </div>
+        `;
 
-        UI.modal.show("HISTÓRICO", conteudo, "📜", "#1976D2", true);
-        registrarLog("HISTORICO", `Consulta realizada: ${matricula}`, "INFO");
+        // Chamada do Modal: Título "HISTÓRICO", nosso HTML personalizado, ícone e cor
+        UI.modal.show("HISTÓRICO", conteudoHTML, "📜", "#1a3c6e", true);
+        
+        registrarLog("HISTORICO", `Consulta realizada: ${matricula} (${nomeMilitar})`, "INFO");
 
     } catch (err) {
-        console.error("Erro detalhado:", err);
+        console.error("Erro ao carregar histórico:", err);
         registrarLog("HISTORICO_ERRO", err.message, "ERRO");
-        UI.modal.show("ERRO", "Não foi possível buscar o histórico.", "❌", "red");
+        UI.modal.show("ERRO", "Falha na comunicação com o servidor.", "❌", "red");
+    } finally {
+        UI.loading.hide();
     }
 }

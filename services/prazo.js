@@ -99,6 +99,12 @@ export function monitorarPrazos(dataAbertura, dataFechamento) {
 
             const diff = fechamento - agora;
 
+            // TRAVA DE SEGURANÇA: Se a diferença for negativa, força o sistema a entender que fechou
+            if (diff <= 0) {
+                location.reload(); // Recarrega a página para aplicar o estado "Fechado" imediatamente
+                return;
+            }            
+
             // Lógica de Cores por Urgência
             if (diff < 7200000) { // 2 horas
                 DOM.prazoBox.classList.add("estado-critico");

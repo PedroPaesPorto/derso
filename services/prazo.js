@@ -72,24 +72,24 @@ export function monitorarPrazos(dataAbertura, dataFechamento) {
 
         /* --- CASO 2: SISTEMA JÁ FECHOU --- */
         else if (agora > fechamento) {
-            STATE.isClosed = true;
-            if (DOM.form) DOM.form.style.display = "none";
-            if (instDiv) instDiv.style.display = "none";
+    STATE.isClosed = true;
+    if (DOM.form) DOM.form.style.display = "none";
+    if (instDiv) instDiv.style.display = "none";
 
-            if (agora <= ultimoDiaMes) {
-                // Mostra campos de consulta se existirem
-                const consultaArea = document.getElementById("consultaFechada");
-                if (consultaArea) consultaArea.style.display = "block";
+    // Mostra a área de consulta mesmo com o form escondido
+    const consultaArea = document.getElementById("consultaFechada");
+    if (consultaArea) consultaArea.classList.remove("is-hidden"); // Use classList por segurança
 
-                DOM.prazoBox.classList.add("estado-sucesso");
-                DOM.timerDisplay.innerHTML = `
-                    <b style="color:#2E7D32">MISSÃO CUMPRIDA!</b><br>
-                    Solicitações de <b>${nomeMesRef}</b> encerradas.
-                `;
-            } else {
-                DOM.timerDisplay.innerHTML = "⌛ Aguardando novo cronograma...";
-            }
-        }
+    if (agora <= ultimoDiaMes) {
+        DOM.prazoBox.classList.add("estado-sucesso");
+        DOM.timerDisplay.innerHTML = `
+            <b style="color:#2E7D32">MISSÃO CUMPRIDA!</b><br>
+            Solicitações para <b>${nomeMesRef}</b> encerradas.
+        `;
+    } else {
+        DOM.timerDisplay.innerHTML = "⌛ Aguardando novo cronograma...";
+    }
+}
 
         /* --- CASO 3: SISTEMA ABERTO (OPERACIONAL) --- */
         else {

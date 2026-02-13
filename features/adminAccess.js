@@ -1,3 +1,5 @@
+import { iniciarPainelAdmin } from "./admin.js";
+
 let contadorCliques = 0;
 let temporizador = null;
 
@@ -8,7 +10,6 @@ export function configurarAcessoAdmin() {
     footer.addEventListener("click", () => {
         contadorCliques++;
 
-        // Reseta após 2 segundos sem clicar
         clearTimeout(temporizador);
         temporizador = setTimeout(() => {
             contadorCliques = 0;
@@ -19,11 +20,34 @@ export function configurarAcessoAdmin() {
             abrirModalAdmin();
         }
     });
+
+    // Evento do botão ENTRAR
+    const btnLogin = document.getElementById("btnAdminLogin");
+    btnLogin?.addEventListener("click", validarAcessoAdmin);
 }
 
 function abrirModalAdmin() {
     const modal = document.getElementById("adminLoginModal");
-    if (modal) {
-        modal.classList.remove("is-hidden");
+    modal?.classList.remove("is-hidden");
+}
+
+function fecharModalAdmin() {
+    const modal = document.getElementById("adminLoginModal");
+    modal?.classList.add("is-hidden");
+}
+
+function validarAcessoAdmin() {
+    const input = document.getElementById("adminMatricula");
+    const matricula = input?.value.trim();
+
+    // ⚠️ DEFINA AQUI SUA MATRÍCULA ADMIN
+    const ADMIN_MATRICULA = "123456"; 
+
+    if (matricula === ADMIN_MATRICULA) {
+        fecharModalAdmin();
+        iniciarPainelAdmin();
+    } else {
+        alert("Matrícula não autorizada.");
+        input.value = "";
     }
 }

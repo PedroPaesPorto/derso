@@ -31,7 +31,11 @@ export async function enviarFormulario(formData) {
 }
 
 export async function buscarHistorico(matricula) {
-    return safeFetch(
+    const resposta = await safeFetch(
         `${CONFIG.API_URL}?action=historico&matricula=${encodeURIComponent(matricula)}`
     );
+    
+    // Se a resposta for um objeto com uma propriedade de lista (ex: dados ou history), 
+    // retorna só a lista. Se já for a lista, retorna ela.
+    return resposta.dados || resposta.history || resposta;
 }

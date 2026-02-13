@@ -5,37 +5,73 @@ import { STATE } from "../core/state.js";
 import { registrarLog } from "./logger.js"; // ./ pois estão na mesma pasta
 
 /* ==============================
-    DARK MODE AUTOMÁTICO
+    DARK MODE AUTOMÁTICO REVISADO
 ============================== */
 export function applyDarkModeStyles() {
-    // Detecta se o sistema do usuário está em modo dark
+    // 1. Só aplica se o celular/PC do usuário estiver em modo dark
     if (!window.matchMedia || !window.matchMedia('(prefers-color-scheme: dark)').matches) {
         return;
     }
 
+    // 2. Evita duplicar o estilo se ele já existir
     if (document.getElementById("darkModeStyle")) return;
 
-    registrarLog("INTERFACE", "Modo Noturno aplicado", "INFO");
+    registrarLog("INTERFACE", "Modo Noturno Tático aplicado", "INFO");
 
     const style = document.createElement("style");
     style.id = "darkModeStyle";
 
     style.innerHTML = `
         @media (prefers-color-scheme: dark) {
-            body { background-color: #121212 !important; color: #e0e0e0 !important; }
-            .container { background: #1e1e1e !important; border: 1px solid #333 !important; }
+            /* Fundo principal e textos */
+            body { background-color: #0f0f0f !important; color: #e0e0e0 !important; }
+            
+            /* Card principal do formulário */
+            .container { 
+                background: #1a1a1a !important; 
+                border: 1px solid #333 !important; 
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            }
+
+            /* Inputs e seletores */
             input:not([type="radio"]), select, textarea { 
-                background: #2d2d2d !important; 
-                color: #fff !important; 
+                background: #252525 !important; 
+                color: #ffffff !important; 
                 border-color: #444 !important; 
             }
+
+            /* Grupo de botões de rádio (Tipo de Folga) */
             .radio-group label { 
-                background: #2d2d2d; 
+                background: #252525; 
                 border-color: #444; 
-                color: #eee; 
+                color: #ccc; 
             }
-            .subtitle { color: #bbb !important; }
-            #prazoBox { box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+
+            /* Destaque para Mensagem Institucional (Aniversários/Avisos) */
+            #instMessage {
+                background: rgba(255, 202, 40, 0.1) !important;
+                color: #ffca28 !important; /* Amarelo Ouro */
+                border: 1px solid rgba(255, 202, 40, 0.3) !important;
+                border-left: 4px solid #ffca28 !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+            }
+
+            /* Textos secundários e legendas */
+            .subtitle, .label-hint, small { color: #999 !important; }
+            
+            /* Box do Cronômetro */
+            #prazoBox { 
+                background: #1e1e1e !important; 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+            }
+
+            /* Ajuste de Modais no Dark Mode */
+            .modal-content {
+                background: #222 !important;
+                color: #fff !important;
+                border: 1px solid #444 !important;
+            }
         }
     `;
 

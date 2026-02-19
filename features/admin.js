@@ -9,7 +9,7 @@ import { registrarLog } from "../services/logger.js";
  * Inicia o Painel Administrativo Completo
  */
 export async function iniciarPainelAdmin() {
-    STATE.isAdminMode = true;
+    window.__ADMIN_MODE__ = true;
     registrarLog("ADMIN", "Iniciando Dashboard Operacional", "INFO");
 
       // 1. Substitui o formulário pela interface de Dashboard

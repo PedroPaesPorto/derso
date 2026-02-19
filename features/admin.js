@@ -70,7 +70,7 @@ document.getElementById("btnAdminExit")?.addEventListener("click", () => locatio
 async function carregarDadosGlobais() {
     try {
         // Chamada para a sua API do Google Apps Script (Action que lê tudo)
-        const resp = await fetch(`${CONFIG.API_URL}?action=readAll`);
+        const resp = await fetch(`${CONFIG.API_URL}?action=readall`);
         const dados = await resp.json();
 
         if (!Array.isArray(dados)) throw new Error("Dados inválidos");

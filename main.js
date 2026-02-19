@@ -12,6 +12,8 @@ import { restaurarRascunho } from "./services/storage.js";
 import { configurarAcessoAdmin } from "./features/adminAccess.js";
 
 
+window.__ADMIN_MODE__ = false;
+
 /**
  * PONTO DE ENTRADA ÚNICO (Bootstrap)
  * Organiza a inicialização do sistema na ordem correta.

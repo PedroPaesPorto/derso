@@ -361,6 +361,26 @@ input:focus {
     border-left: 4px solid var(--azul-marinho);
 }
 
+select.admin-input {
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--azul-marinho);
+}
+
+.stat-box {
+    transition: transform 0.2s ease;
+}
+
+.stat-box:hover {
+    transform: scale(1.02);
+}
+
+/* Garante que o gráfico não quebre em telas pequenas */
+#chartFolgas {
+    max-width: 100% !important;
+}
+
 
 /* ESTILOS DO PAINEL ADMIN */
 .admin-wrapper { animation: fadeIn 0.4s ease; }

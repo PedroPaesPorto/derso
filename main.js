@@ -32,19 +32,22 @@ async function bootstrap() {
         UI.loading.show("Sincronizando com o servidor...");
         applyDarkModeStyles();
 
-        // 3. Busca de Dados em Paralelo: Ganha tempo buscando tudo de uma vez
+       // 3. Busca de Dados Unificada: Busca datas e lista em uma única requisição
         registrarLog("SISTEMA", "Buscando dados institucionais...");
         
-        const [datasResp, listaResp] = await Promise.all([
-            fetch(`${CONFIG.API_URL}?action=datas`),
-            fetch(`${CONFIG.API_URL}?action=lista`)
-        ]);
+        // Chamada única para a ação "get_initial_data" que criaremos no GAS
+        const response = await fetch(`${CONFIG.API_URL}?action=get_initial_data`);
 
-        // Verifica se a rede deu algum erro (Ex: 404 ou 500)
-        if (!datasResp.ok || !listaResp.ok) throw new Error("Erro na rede ao buscar dados.");
+        if (!response.ok) throw new Error(`Erro na rede: ${response.status}`);
 
-        const dData = await datasResp.json();
-        const lData = await listaResp.json();
+        const result = await response.json();
+
+        // 4. População do Estado (STATE)
+        const dData = result.datas;
+        const lData = result.lista;
+
+        STATE.employeeList = lData || {};
+        registrarLog("SISTEMA", "Dados carregados com sucesso.", "SUCESSO");
 
         // 4. População do Estado (STATE): Salva a lista de policiais na memória
         STATE.employeeList = lData || {};

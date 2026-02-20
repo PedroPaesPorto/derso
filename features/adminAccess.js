@@ -36,18 +36,33 @@ function fecharModalAdmin() {
     modal?.classList.add("is-hidden");
 }
 
-function validarAcessoAdmin() {
+async function validarAcessoAdmin() {
     const input = document.getElementById("adminMatricula");
     const matricula = input?.value.trim();
 
-    // ⚠️ DEFINA AQUI SUA MATRÍCULA ADMIN
-    const ADMIN_MATRICULA = "300199600"; 
+    const senha = prompt("Digite a senha administrativa:");
 
-    if (matricula === ADMIN_MATRICULA) {
-        fecharModalAdmin();
-        iniciarPainelAdmin();
-    } else {
-        alert("Matrícula não autorizada.");
-        input.value = "";
+    try {
+
+        const resp = await fetch(
+            `${CONFIG.API_URL}?action=adminlogin&matricula=${matricula}&senha=${senha}`
+        );
+
+        const dados = await resp.json();
+
+        if (dados.autorizado) {
+
+            localStorage.setItem("adminToken", dados.token);
+
+            fecharModalAdmin();
+            iniciarPainelAdmin();
+
+        } else {
+            alert("Credenciais inválidas.");
+            input.value = "";
+        }
+
+    } catch (err) {
+        alert("Erro ao conectar ao servidor.");
     }
 }

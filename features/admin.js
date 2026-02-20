@@ -72,6 +72,7 @@ async function carregarDadosGlobais() {
         // Chamada para a sua API do Google Apps Script (Action que lê tudo)
         const resp = await fetch(`${CONFIG.API_URL}?action=readall`);
         const dados = await resp.json();
+        console.log("RESPOSTA DO BACKEND:", dados);
 
         if (!Array.isArray(dados)) throw new Error("Dados inválidos");
 

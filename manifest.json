@@ -13,9 +13,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/index.html",
-  "background_color": "#1A3C6E",
+  "start_url": "./index.html", // ✅ Adicione o ponto aqui
   "display": "standalone",
-  "scope": "/",
+  "scope": "./",             // ✅ Adicione o ponto aqui
+  "background_color": "#1A3C6E",
   "theme_color": "#1A3C6E"
 }

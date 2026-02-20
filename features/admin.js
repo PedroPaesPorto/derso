@@ -69,19 +69,23 @@ document.getElementById("btnAdminExit")?.addEventListener("click", () => locatio
 
 async function carregarDadosGlobais() {
     try {
-        // Chamada para a sua API do Google Apps Script (Action que lê tudo)
-        const resp = await fetch(`${CONFIG.API_URL}?action=readall`);
+
+        const token = localStorage.getItem("adminToken");
+
+        if (!token) throw new Error("Token não encontrado");
+
+        const resp = await fetch(`${CONFIG.API_URL}?action=readall&token=${token}`);
         const dados = await resp.json();
-        console.log("RESPOSTA DO BACKEND:", dados);
 
-        if (!Array.isArray(dados)) throw new Error("Dados inválidos");
+        if (!Array.isArray(dados)) throw new Error("Não autorizado");
 
-        STATE.listaCompletaAdmin = dados; // Salva no estado global para filtro rápido
+        STATE.listaCompletaAdmin = dados;
         atualizarInterfaceAdmin(dados);
 
     } catch (err) {
         console.error(err);
-        document.getElementById("adminTableBody").innerHTML = `<tr><td colspan="3" style="color:red; text-align:center;">Erro ao carregar dados.</td></tr>`;
+        document.getElementById("adminTableBody").innerHTML =
+            `<tr><td colspan="3" style="color:red; text-align:center;">Acesso não autorizado.</td></tr>`;
     }
 }
 

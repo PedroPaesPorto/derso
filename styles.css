@@ -270,7 +270,7 @@ input:focus {
     padding-top: 15px;
     border-top: 1px solid rgba(0,0,0,0.05);
     
-    cursor: default;        /* não muda o cursor */
+    cursor: default !important; /* só força a seta normal, sem desabilitar o clique */
     text-decoration: none;  /* remove underline */
     pointer-events: auto;   /* mantém clicável se precisar de JS, mas não muda estilo */
 }
@@ -278,7 +278,7 @@ input:focus {
 .footer:hover {
     color: #888;            /* mantém cor igual */
     text-decoration: none;  /* nada de underline ao passar o mouse */
-}
+    cursor: default !important; /* mantém sempre a seta */
 
 .is-hidden { display: none !important; }
 

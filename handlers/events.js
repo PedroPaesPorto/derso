@@ -66,27 +66,30 @@ export function setupEvents() {
     /* ======================================
         MATRÍCULA - VALIDAÇÃO E TEMA
     ====================================== */
+    
     DOM.matricula?.addEventListener("blur", () => {
-        let val = DOM.matricula.value.trim();
+        let val = DOM.matricula.value.trim().replace(/\D/g, ''); // Limpeza de caracteres
         if (!val) return;
 
-        if (val.length <= 6 && !val.startsWith("1000")) {
+        // Espelhando a lógica do seu Código.gs: normalizeMatricula
+        if (!val.startsWith("1000")) {
             val = "1000" + val;
         }
 
         DOM.matricula.value = val;
         const erroEl = document.getElementById("erroMatricula");
 
-        if (STATE.employeeList[val]) {
-            const militar = STATE.employeeList[val];
-            DOM.nome.value = typeof militar === "object" ? militar.nome : militar;
+        // No seu Código.gs, a lista é: lista[matricula] = { nome: ..., niver: ... }
+        const militar = STATE.employeeList[val];
+
+        if (militar && militar.nome) {
+            DOM.nome.value = militar.nome;
             if (erroEl) erroEl.style.display = "none";
-            registrarLog("VALIDACAO", `Matrícula ${val} identificada`, "SUCESSO");
+            registrarLog("VALIDACAO", `Militar: ${militar.nome}`, "SUCESSO");
             applyInstitutionalTheme(val);
         } else {
             DOM.nome.value = "";
             if (erroEl) erroEl.style.display = "block";
-            registrarLog("VALIDACAO", `Matrícula ${val} não encontrada`, "AVISO");
             applyInstitutionalTheme();
         }
         updateProgress();

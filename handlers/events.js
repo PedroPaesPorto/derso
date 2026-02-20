@@ -118,32 +118,34 @@ export function setupEvents() {
    FUNÇÕES DE ACESSO ADMINISTRATIVO
 ====================================== */
 async function abrirPortaAdmin() {
-    const matriculaMestre = "300199600";
     const login = prompt("🛡️ SISTEMA DERSO - ACESSO RESTRITO\nIdentifique-se:");
-
     if (!login) return;
+    const senha = prompt("Digite sua senha de acesso:");
+    if (!senha) return;
 
-    if (login === matriculaMestre) {
-        // ✅ O PULO DO GATO: Salva a credencial para o admin.js usar depois
-        localStorage.setItem("adminToken", login); 
-        
-        registrarLog("ADMIN", "Acesso autorizado: Pedro Porto", "SUCESSO");
-        UI.loading.show("Iniciando Painel de Controle...");
-        
-        try {
+    UI.loading.show("Autenticando...");
+
+    try {
+        // Faz o login REAL no servidor para pegar o Token UUID
+        const resp = await fetch(`${CONFIG.API_URL}?action=adminlogin&matricula=${login}&senha=${senha}`);
+        const result = await resp.json();
+
+        if (result.autorizado) {
+            // ✅ SALVA O TOKEN OFICIAL QUE O GOOGLE GEROU
+            localStorage.setItem("derso_session_token", result.token);
+            
+            registrarLog("ADMIN", `Acesso autorizado: ${result.nome}`, "SUCESSO");
+            
             const { iniciarPainelAdmin } = await import("../features/admin.js");
-            await iniciarPainelAdmin(); // Use await aqui
-        } catch (e) {
-            console.error(e);
-            UI.modal.show("ERRO", "Falha ao carregar módulo administrativo.", "❌", "red");
-        } finally {
-            UI.loading.hide();
+            await iniciarPainelAdmin();
+        } else {
+            alert("Credenciais inválidas!");
+            registrarLog("SEGURANÇA", `Tentativa de login falhou para: ${login}`, "ERRO");
         }
-    } else {
-        const intruso = STATE.employeeList[login];
-        const nomeIntruso = typeof intruso === "object" ? intruso.nome : (intruso || "DESCONHECIDO");
-        registrarLog("SEGURANÇA", `TENTATIVA NEGADA: ${nomeIntruso}`, "ERRO");
-        alert("Acesso Negado.");
+    } catch (e) {
+        alert("Erro ao conectar com o servidor de autenticação.");
+    } finally {
+        UI.loading.hide();
     }
 }
 /* ======================================

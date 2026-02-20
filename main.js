@@ -32,15 +32,19 @@ async function bootstrap() {
         UI.loading.show("Sincronizando com o servidor...");
         applyDarkModeStyles();
 
-       // 3. Busca de Dados Unificada: Busca datas e lista em uma única requisição
+      // 3. Busca de Dados Unificada (Encaixe com doGet action=get_initial_data)
         registrarLog("SISTEMA", "Buscando dados institucionais...");
         
-        // Chamada única para a ação "get_initial_data" que criaremos no GAS
         const response = await fetch(`${CONFIG.API_URL}?action=get_initial_data`);
-
-        if (!response.ok) throw new Error(`Erro na rede: ${response.status}`);
-
+        if (!response.ok) throw new Error("Erro ao conectar com o servidor Google.");
+        
         const result = await response.json();
+
+        // 4. População do Estado (STATE) usando o retorno do seu Código.gs
+        STATE.employeeList = result.lista || {};
+        const dData = result.datas;
+
+        registrarLog("SISTEMA", "Dados carregados com sucesso.", "SUCESSO");
 
         // 4. População do Estado (STATE)
         const dData = result.datas;

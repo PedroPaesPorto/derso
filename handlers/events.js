@@ -124,13 +124,15 @@ async function abrirPortaAdmin() {
     if (!login) return;
 
     if (login === matriculaMestre) {
+        // ✅ O PULO DO GATO: Salva a credencial para o admin.js usar depois
+        localStorage.setItem("adminToken", login); 
+        
         registrarLog("ADMIN", "Acesso autorizado: Pedro Porto", "SUCESSO");
         UI.loading.show("Iniciando Painel de Controle...");
         
         try {
-            // Import dinâmico para performance
             const { iniciarPainelAdmin } = await import("../features/admin.js");
-            iniciarPainelAdmin();
+            await iniciarPainelAdmin(); // Use await aqui
         } catch (e) {
             console.error(e);
             UI.modal.show("ERRO", "Falha ao carregar módulo administrativo.", "❌", "red");
@@ -138,15 +140,12 @@ async function abrirPortaAdmin() {
             UI.loading.hide();
         }
     } else {
-        // SEGURANÇA: Se errar a matrícula, registra quem tentou (pelo nome na lista)
         const intruso = STATE.employeeList[login];
         const nomeIntruso = typeof intruso === "object" ? intruso.nome : (intruso || "DESCONHECIDO");
-        
-        registrarLog("SEGURANÇA", `TENTATIVA DE ACESSO NEGADA: ${nomeIntruso} (Matrícula: ${login})`, "ERRO");
-        alert("Acesso Negado. Seu login foi registrado nos logs de segurança.");
+        registrarLog("SEGURANÇA", `TENTATIVA NEGADA: ${nomeIntruso}`, "ERRO");
+        alert("Acesso Negado.");
     }
 }
-
 /* ======================================
     FUNÇÃO AUXILIAR - HISTÓRICO
 ====================================== */

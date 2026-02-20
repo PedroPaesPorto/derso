@@ -7,13 +7,15 @@ import { updateProgress } from "../services/progress.js";
 import { salvarRascunho } from "../services/storage.js";
 import { UI } from "../ui/manager.js"; 
 
-// 1. NORMALIZAÇÃO DE SEGURANÇA (Antes de qualquer coisa)
-    // Garante que o back-end receba a matrícula pura (apenas números + prefixo 1000)
+export async function handleSubmit(e) {
+    e.preventDefault();
+
+    // 1. NORMALIZAÇÃO DE SEGURANÇA (Dentro da função!)
     let matriculaLimpa = DOM.matricula.value.trim().replace(/\D/g, '');
     if (matriculaLimpa && matriculaLimpa.length <= 6 && !matriculaLimpa.startsWith("1000")) {
         matriculaLimpa = "1000" + matriculaLimpa;
     }
-    DOM.matricula.value = matriculaLimpa; // Atualiza o DOM para o FormData capturar o valor certo
+    DOM.matricula.value = matriculaLimpa; 
 
     // 2. 🔒 Anti spam (3 segundos)
     if (Date.now() - STATE.ultimoEnvio < 3000) {
@@ -26,14 +28,11 @@ import { UI } from "../ui/manager.js";
     registrarLog("ENVIO", `Iniciando tentativa para matrícula: ${mLog}`);
 
     try {
-        // ✅ BLOQUEIO DE INTERFACE
         UI.feedback.lockForm(); 
         UI.loading.show("ENVIANDO...");
 
-        // Prepara os dados para o doPost
         const formData = new URLSearchParams(new FormData(DOM.form));
 
-        // ⏳ Timeout manual (10s) para conexões instáveis
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -54,7 +53,6 @@ import { UI } from "../ui/manager.js";
             throw new Error("Resposta inválida do servidor");
         }
 
-        // Verifica o sucesso conforme o padrão do seu Código.gs
         if (response.success || response.result === "success") {
             registrarLog("SUCESSO", `Solicitação de ${mLog} registrada`, "SUCESSO");
 
@@ -70,7 +68,6 @@ import { UI } from "../ui/manager.js";
             UI.feedback.scrollToTop();   
 
         } else {
-            // Trata erros retornados pelo back-end (Ex: duplicidade)
             tratarErroServidor(response);
         }
 
@@ -99,7 +96,6 @@ import { UI } from "../ui/manager.js";
 function limparFormulario() {
     if (DOM.form) {
         DOM.form.reset();
-        // Chama o progress do manager diretamente
         UI.updateProgress(); 
         salvarRascunho({}); 
         registrarLog("FORM_RESET", "Formulário limpo após envio");
@@ -109,7 +105,8 @@ function limparFormulario() {
 function tratarErroServidor(response) {
     registrarLog("ENVIO_NEGADO", `Servidor recusou: ${response.message}`, "AVISO");
 
-    if (response.message?.toLowerCase().includes("duplicada")) {
+    // Ajustado para bater com a frase exata do seu Código.gs
+    if (response.message?.includes("Já existe") || response.message?.toLowerCase().includes("duplicada")) {
         UI.modal.show(
             "SOLICITAÇÃO DUPLICADA",
             "Você já solicitou folga para esta data.",
@@ -126,5 +123,5 @@ function tratarErroServidor(response) {
         "⚠️",
         "orange"
     );
-    UI.feedback.shake(DOM.form); // Corrigido
+    UI.feedback.shake(DOM.form);
 }

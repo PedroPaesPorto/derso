@@ -151,5 +151,17 @@ function filtrarPainel() {
 }
 
 function exportarParaEscala() {
-    // ... (sua função de CSV que já funciona)
+    const dados = STATE.listaCompletaAdmin;
+    if (!dados || dados.length === 0) return;
+
+    let csv = "\ufeffDATA;MATRICULA;NOME;TIPO_FOLGA\n";
+    dados.forEach(i => {
+        csv += `${i.data};${i.matricula};${i.nome};${i.folga || i.tipo}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `DERSO_1BPM_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
 }

@@ -269,6 +269,15 @@ input:focus {
     margin-top: 30px;
     padding-top: 15px;
     border-top: 1px solid rgba(0,0,0,0.05);
+    
+    cursor: default;        /* não muda o cursor */
+    text-decoration: none;  /* remove underline */
+    pointer-events: auto;   /* mantém clicável se precisar de JS, mas não muda estilo */
+}
+
+.footer:hover {
+    color: #888;            /* mantém cor igual */
+    text-decoration: none;  /* nada de underline ao passar o mouse */
 }
 
 .is-hidden { display: none !important; }

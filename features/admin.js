@@ -69,28 +69,18 @@ document.getElementById("btnAdminExit")?.addEventListener("click", () => locatio
 
 async function carregarDadosGlobais() {
     try {
-        const token = localStorage.getItem("adminToken");
+        // Mude de "adminToken" para "derso_session_token" para evitar conflito com lógicas antigas
+        const token = localStorage.getItem("derso_session_token"); 
         
-        // Log de depuração para você ver no console
-        console.log("Tentando acesso com token:", token);
+        if (!token) throw new Error("Sessão expirada. Faça login novamente.");
 
-        if (!token) throw new Error("Token não encontrado");
-
-        // Chama o readall passando o token que salvamos no events.js
         const resp = await fetch(`${CONFIG.API_URL}?action=readall&token=${token}`);
-        
-        if (!resp.ok) throw new Error("Erro na requisição ao servidor");
-
         const dados = await resp.json();
 
-        // O seu script retorna um Objeto com erro se o token estiver errado
-        if (dados.error || !Array.isArray(dados)) {
-            throw new Error(dados.message || "Não autorizado");
-        }
+        if (dados.error) throw new Error(dados.error); // Aqui ele vai pegar o "Não autorizado"
 
         STATE.listaCompletaAdmin = dados;
         atualizarInterfaceAdmin(dados);
-
     } catch (err) {
         registrarLog("ADMIN_ERRO", err.message, "ERRO");
         document.getElementById("adminTableBody").innerHTML =

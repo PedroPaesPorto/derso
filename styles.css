@@ -270,19 +270,20 @@ input:focus {
     padding-top: 15px;
     border-top: 1px solid rgba(0,0,0,0.05);
     
-    cursor: default !important; /* só força a seta normal, sem desabilitar o clique */
-    text-decoration: none;  /* remove underline */
-    pointer-events: auto;   /* mantém clicável se precisar de JS, mas não muda estilo */
+    cursor: default !important; 
+    text-decoration: none;  
+    pointer-events: auto;   /* Essencial para o clique do Admin funcionar */
 }
 
 .footer:hover {
-    color: #888;            /* mantém cor igual */
-    text-decoration: none;  /* nada de underline ao passar o mouse */
-    cursor: default !important; /* mantém sempre a seta */
+    color: #888;            
+    text-decoration: none;  
+    cursor: default !important;
+} /* Chave fechada corretamente agora */
 
 .is-hidden { display: none !important; }
 
-/* MODO NOTURNO */
+/* MODO NOTURNO (Agora voltará a funcionar) */
 @media (prefers-color-scheme: dark) {
     :root {
         --cinza-fundo: #0f172a;

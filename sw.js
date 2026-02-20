@@ -3,12 +3,12 @@ const CACHE_NAME = 'derso-v5-final';
 // Arquivos que o app precisa para abrir mesmo sem sinal
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
-  './styles.css',
-  './main.js',
-  './manifest.json',
-  './assets/icon-192.png',
-  './assets/icon-512.png'
+  'index.html',
+  'styles.css',
+  'main.js',
+  'manifest.json',
+  'assets/icon-192.png',
+  'assets/icon-512.png'
 ];
 
 // 1. Instalação e Cache Inicial
